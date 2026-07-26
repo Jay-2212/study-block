@@ -2,9 +2,10 @@
 
 ## Current state
 
-Study Block 1.0.2 is implemented and locally verified. The installed copy at
-`/Applications/Study Block.app` is the same release binary packaged in
-`dist/Study-Block-1.0.2.dmg`.
+Study Block 1.0.2 is implemented, installed, and published as GitHub release
+[`v1.0.2`](https://github.com/Jay-2212/study-block/releases/tag/v1.0.2).
+The installed copy at `/Applications/Study Block.app` is the same release
+binary packaged in `dist/Study-Block-1.0.2.dmg`.
 
 The release adds cached website favicons with globe fallbacks, native app icons
 throughout onboarding and settings, a visible ready-screen Settings button,
@@ -26,6 +27,9 @@ session-created Do Not Disturb across live settings reconfiguration.
 - The DMG passed `hdiutil verify`, contains the matching 1.0.2 app and an
   Applications symlink, and has SHA-256
   `bff5a0509ba2b0c6e77e8651f8857d3cc7bac7322bc51854b1b45b5022f5bd43`.
+- The published asset was downloaded again, matched the local DMG byte for
+  byte, passed `hdiutil verify`, and the `v1.0.2` tag resolves to release commit
+  `c407b31`.
 
 ## Distribution caveat
 
@@ -36,7 +40,9 @@ the permission to the binary hash.
 
 ## Next steps
 
-Commit and publish the verified `v1.0.2` release.
+No product work is pending. A future trusted distribution still requires
+Developer ID signing, hardened-runtime validation, notarization, stapling, and
+a clean-machine Gatekeeper test.
 
 ## Open questions
 
