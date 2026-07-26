@@ -31,8 +31,8 @@ before the session.
 
 ## Download
 
-Download the current DMG from the
-[latest GitHub release](https://github.com/Jay-2212/study-block/releases/latest).
+Download the current DMG from the permanent
+[latest-release link](https://github.com/Jay-2212/study-block/releases/latest/download/StudyBlock.dmg).
 
 1. Open `StudyBlock.dmg`.
 2. Drag **Study Block** to **Applications**.
