@@ -56,7 +56,7 @@ struct StudyDomainsStepView: View {
                     ForEach(model.discoveredDomains, id: \.self) { domain in
                         SelectionRow(
                             title: domain,
-                            systemImage: "globe",
+                            icon: .website(domain),
                             isSelected: model.draft.whitelistedDomains.contains(domain)
                         ) {
                             model.toggleWhitelistedDomain(domain)
@@ -78,7 +78,7 @@ struct StudyDomainsStepView: View {
                     SelectionRow(
                         title: site.name,
                         subtitle: site.domain,
-                        systemImage: site.systemImage,
+                        icon: .website(site.domain),
                         isSelected: model.draft.whitelistedDomains.contains(site.domain)
                     ) {
                         model.toggleWhitelistedDomain(site.domain)
@@ -104,4 +104,3 @@ struct StudyDomainsStepView: View {
         }
     }
 }
-

@@ -37,6 +37,7 @@ struct StudyBlockApp: App {
         WindowGroup("Study Block", id: "main") {
             ContentView()
                 .environment(appModel)
+                .environment(appModel.listIcons)
                 .frame(minWidth: 760, minHeight: 560)
                 .onAppear {
                     appDelegate.terminationHandler = {
@@ -46,6 +47,14 @@ struct StudyBlockApp: App {
                 }
         }
         .defaultSize(width: 900, height: 660)
+        .commands {
+            CommandGroup(replacing: .appSettings) {
+                SettingsLink {
+                    Text("Settings…")
+                }
+                .keyboardShortcut(",", modifiers: .command)
+            }
+        }
 
         MenuBarExtra(
             "Study Block",
@@ -53,11 +62,13 @@ struct StudyBlockApp: App {
         ) {
             MenuBarContentView()
                 .environment(appModel)
+                .environment(appModel.listIcons)
         }
 
         Settings {
             SettingsView()
                 .environment(appModel)
+                .environment(appModel.listIcons)
                 .frame(width: 720, height: 620)
         }
     }

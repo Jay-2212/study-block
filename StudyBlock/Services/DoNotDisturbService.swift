@@ -11,14 +11,36 @@ final class DoNotDisturbService {
     private(set) var isActiveForSession = false
 
     @ObservationIgnored private var changedFocus = false
+    @ObservationIgnored private var hasSession = false
+    @ObservationIgnored private var activationRequested = false
     @ObservationIgnored private var sessionToken = UUID()
 
     func start(enabled: Bool) {
+        if hasSession {
+            update(enabled: enabled)
+            return
+        }
+        hasSession = true
+        update(enabled: enabled)
+    }
+
+    func update(enabled: Bool) {
+        guard hasSession else {
+            start(enabled: enabled)
+            return
+        }
+        guard enabled else {
+            releaseFocusChange()
+            activationRequested = false
+            return
+        }
+        guard !activationRequested else { return }
+
+        activationRequested = true
         sessionToken = UUID()
         changedFocus = false
         isActiveForSession = false
         statusMessage = nil
-        guard enabled else { return }
 
         let token = sessionToken
         INFocusStatusCenter.default.requestAuthorization { [weak self] status in
@@ -39,11 +61,23 @@ final class DoNotDisturbService {
     }
 
     func stop() {
+        hasSession = false
+        activationRequested = false
+        releaseFocusChange()
+    }
+
+    private func releaseFocusChange() {
         sessionToken = UUID()
+        let token = sessionToken
         if changedFocus {
             do {
                 try toggleThroughControlCenter()
-                statusMessage = "Do Not Disturb restored."
+                statusMessage = "Restoring Do Not Disturb…"
+                verifyFocusState(
+                    expectedFocused: false,
+                    token: token,
+                    successMessage: "Do Not Disturb restored."
+                )
             } catch {
                 statusMessage = error.localizedDescription
             }
@@ -61,9 +95,37 @@ final class DoNotDisturbService {
             try toggleThroughControlCenter()
             changedFocus = true
             isActiveForSession = true
-            statusMessage = "Do Not Disturb is on for this session."
+            statusMessage = "Turning on Do Not Disturb…"
+            verifyFocusState(
+                expectedFocused: true,
+                token: sessionToken,
+                successMessage: "Do Not Disturb is on for this session."
+            )
         } catch {
             statusMessage = error.localizedDescription
+        }
+    }
+
+    private func verifyFocusState(
+        expectedFocused: Bool,
+        token: UUID,
+        successMessage: String
+    ) {
+        Task { @MainActor [weak self] in
+            for delay in [350, 650, 1_000] {
+                try? await Task.sleep(for: .milliseconds(delay))
+                guard let self, self.sessionToken == token else { return }
+                let isFocused =
+                    INFocusStatusCenter.default.focusStatus.isFocused == true
+                if isFocused == expectedFocused {
+                    self.statusMessage = successMessage
+                    return
+                }
+            }
+            guard let self, self.sessionToken == token else { return }
+            self.statusMessage = expectedFocused
+                ? "Do Not Disturb could not be confirmed as active."
+                : "Do Not Disturb restoration could not be confirmed."
         }
     }
 

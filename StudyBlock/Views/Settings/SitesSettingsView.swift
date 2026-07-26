@@ -12,7 +12,6 @@ struct SitesSettingsView: View {
                 model: allowedEditor,
                 title: "Study-site allowlist",
                 help: "Study sites always take precedence over the blocklist.",
-                systemImage: "checkmark.shield",
                 domains: appModel.settingsStore.settings.whitelistedDomains,
                 onAdd: addAllowedDomain,
                 onRemove: removeAllowedDomain
@@ -22,7 +21,6 @@ struct SitesSettingsView: View {
                 model: blockedEditor,
                 title: "Website blocklist",
                 help: "Google, ChatGPT, and Claude can never be blocked.",
-                systemImage: "hand.raised",
                 domains: appModel.settingsStore.settings.blacklistedDomains,
                 onAdd: addBlockedDomain,
                 onRemove: removeBlockedDomain
@@ -84,7 +82,11 @@ struct SitesSettingsView: View {
         } else {
             ForEach(apps.sorted { $0.name < $1.name }) { app in
                 HStack {
-                    Label(app.name, systemImage: "app")
+                    ListIconView(
+                        source: .application(app.bundleIdentifier),
+                        size: 22
+                    )
+                    Text(app.name)
                     Spacer()
                     Text(app.bundleIdentifier)
                         .font(.caption)
@@ -155,7 +157,6 @@ private struct DomainListEditor: View {
     @Bindable var model: DomainEntryModel
     let title: String
     let help: String
-    let systemImage: String
     let domains: [String]
     let onAdd: (String) -> String?
     let onRemove: (String) -> Void
@@ -168,7 +169,8 @@ private struct DomainListEditor: View {
             } else {
                 ForEach(domains, id: \.self) { domain in
                     HStack {
-                        Label(domain, systemImage: systemImage)
+                        ListIconView(source: .website(domain), size: 20)
+                        Text(domain)
                         Spacer()
                         Button {
                             onRemove(domain)

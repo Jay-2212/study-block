@@ -36,7 +36,7 @@ struct WhitelistStepView: View {
                     SelectionRow(
                         title: site.name,
                         subtitle: site.domain,
-                        systemImage: site.systemImage,
+                        icon: .website(site.domain),
                         isSelected: model.draft.whitelistedDomains.contains(site.domain)
                     ) {
                         model.toggleWhitelistedDomain(site.domain)
@@ -48,7 +48,7 @@ struct WhitelistStepView: View {
                 if !SitePreset.productive.map(\.domain).contains(domain) {
                     SelectionRow(
                         title: domain,
-                        systemImage: "globe",
+                        icon: .website(domain),
                         isSelected: true
                     ) {
                         model.toggleWhitelistedDomain(domain)
@@ -78,7 +78,7 @@ struct WhitelistStepView: View {
                     SelectionRow(
                         title: app.name,
                         subtitle: app.bundleIdentifier,
-                        systemImage: "app",
+                        icon: .application(app.bundleIdentifier),
                         isSelected: model.draft.whitelistedApps.contains(app)
                     ) {
                         model.toggleApp(app, inWhitelist: true)
@@ -89,7 +89,7 @@ struct WhitelistStepView: View {
                     SelectionRow(
                         title: app.name,
                         subtitle: app.bundleIdentifier,
-                        systemImage: "app.badge.checkmark",
+                        icon: .application(app.bundleIdentifier),
                         isSelected: true
                     ) {
                         model.toggleApp(app, inWhitelist: true)
@@ -106,4 +106,3 @@ struct WhitelistStepView: View {
             .sorted { $0.name < $1.name }
     }
 }
-

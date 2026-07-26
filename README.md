@@ -15,13 +15,19 @@ control, and a small floating timer.
   quit request
 - Strict mode with shorter escalation timing and no snoozing
 - Optional session-scoped Do Not Disturb and music pausing
+- Website favicons and native app icons with fast local caching and fallbacks
 - Editable study sites, blocked sites and apps, presets, and defaults
+- Settings from the ready screen, app menu, or Command-Comma
 - Local session history, weekly focus time, and streaks
 - Launch at login and interrupted-session recovery
 
 Study sites take precedence over the blocklist. Google, ChatGPT, and Claude are
 always available. Settings, session checkpoints, and history stay on your Mac,
 and Study Block never force-quits another app.
+
+Do Not Disturb is released when a session stops or expires, when the Mac
+sleeps, and before Study Block quits, restoring the Focus state that existed
+before the session.
 
 ## Download
 
@@ -70,6 +76,12 @@ Run the focused smoke tests with:
 
 ```sh
 ./script/run_smoke_tests.sh
+```
+
+Build and verify the current versioned DMG with:
+
+```sh
+./script/package_release.sh
 ```
 
 With Command Line Tools, the built app is written to

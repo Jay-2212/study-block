@@ -66,6 +66,11 @@ struct TimerSetupView: View {
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)
                     .keyboardShortcut(.return)
+
+                    SettingsLink {
+                        Label("Settings", systemImage: "gearshape")
+                    }
+                    .controlSize(.large)
                 }
             }
 
@@ -73,9 +78,14 @@ struct TimerSetupView: View {
                 enforcementStatus
                 sessionModeStatus
             } else {
-                Text("Blocked Chrome tabs and distracting apps are watched only while a session runs.")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
+                VStack(spacing: 8) {
+                    Text("Blocked Chrome tabs and distracting apps are watched only while a session runs.")
+                    if let message = appModel.doNotDisturb.statusMessage {
+                        Label(message, systemImage: "moon")
+                    }
+                }
+                .font(.callout)
+                .foregroundStyle(.secondary)
             }
 
             Spacer()

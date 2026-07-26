@@ -3,20 +3,20 @@ import SwiftUI
 struct SelectionRow: View {
     let title: String
     let subtitle: String?
-    let systemImage: String
+    let icon: ListIconSource
     let isSelected: Bool
     let action: () -> Void
 
     init(
         title: String,
         subtitle: String? = nil,
-        systemImage: String,
+        icon: ListIconSource,
         isSelected: Bool,
         action: @escaping () -> Void
     ) {
         self.title = title
         self.subtitle = subtitle
-        self.systemImage = systemImage
+        self.icon = icon
         self.isSelected = isSelected
         self.action = action
     }
@@ -24,9 +24,10 @@ struct SelectionRow: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 10) {
-                Image(systemName: systemImage)
-                    .frame(width: 20)
-                    .foregroundStyle(isSelected ? .white : .secondary)
+                ListIconView(
+                    source: icon,
+                    fallbackColor: isSelected ? .white : .secondary
+                )
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)

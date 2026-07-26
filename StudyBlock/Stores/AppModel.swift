@@ -10,6 +10,7 @@ final class AppModel {
     let onboarding: OnboardingModel
     let appEscalation: AppEscalationCoordinator
     let doNotDisturb: DoNotDisturbService
+    let listIcons = ListIconStore()
     let launchAtLogin = LaunchAtLoginService()
     private(set) var lastBlockedDomain: String?
     private(set) var enforcementMessage: String?
@@ -173,11 +174,13 @@ final class AppModel {
         doNotDisturb.start(enabled: settings.doNotDisturbEnabled)
     }
 
-    private func stopSessionResources() {
+    private func stopSessionResources(releaseDoNotDisturb: Bool = true) {
         webEnforcement.stop()
         appEscalation.stop()
         musicBlocking.stop()
-        doNotDisturb.stop()
+        if releaseDoNotDisturb {
+            doNotDisturb.stop()
+        }
     }
 
     private func applySettingsLive() {
@@ -186,7 +189,7 @@ final class AppModel {
               let startDate = timer.sessionStartDate else {
             return
         }
-        stopSessionResources()
+        stopSessionResources(releaseDoNotDisturb: false)
         startSessionResources(
             startDate: startDate,
             endDate: timer.sessionEndDate

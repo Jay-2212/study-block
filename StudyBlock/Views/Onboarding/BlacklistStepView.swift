@@ -43,7 +43,7 @@ struct BlacklistStepView: View {
                     SelectionRow(
                         title: site.name,
                         subtitle: site.domain,
-                        systemImage: site.systemImage,
+                        icon: .website(site.domain),
                         isSelected: model.draft.blacklistedDomains.contains(site.domain)
                     ) {
                         model.toggleBlacklistedDomain(site.domain)
@@ -87,7 +87,7 @@ struct BlacklistStepView: View {
                         SelectionRow(
                             title: app.name,
                             subtitle: app.bundleIdentifier,
-                            systemImage: "gamecontroller",
+                            icon: .application(app.bundleIdentifier),
                             isSelected: true
                         ) {
                             model.toggleApp(app, inWhitelist: false)
