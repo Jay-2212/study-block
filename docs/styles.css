@@ -593,6 +593,8 @@ h1 span {
 
 .feature-card {
   position: relative;
+  display: flex;
+  flex-direction: column;
   min-height: 31rem;
   padding: clamp(1.8rem, 4vw, 3.5rem);
   background: var(--ink-elevated);
@@ -652,10 +654,10 @@ h1 span {
 .mini-timer,
 .week-bars,
 .nudge-ladder {
-  position: absolute;
-  right: clamp(1.8rem, 4vw, 3.5rem);
-  bottom: clamp(1.8rem, 4vw, 3.5rem);
-  left: clamp(1.8rem, 4vw, 3.5rem);
+  position: static;
+  width: 100%;
+  margin-top: auto;
+  padding-top: var(--space-5);
 }
 
 .domain-demo {
@@ -693,8 +695,8 @@ h1 span {
 .nudge-ladder {
   display: grid;
   gap: 0.45rem;
-  margin: 0;
-  padding: 0;
+  margin: auto 0 0;
+  padding: var(--space-5) 0 0;
   list-style: none;
 }
 
@@ -1159,9 +1161,7 @@ h1 span {
   .mini-timer,
   .week-bars,
   .nudge-ladder {
-    right: 1.5rem;
-    bottom: 1.5rem;
-    left: 1.5rem;
+    padding-top: var(--space-4);
   }
 
   .nudge-ladder small {

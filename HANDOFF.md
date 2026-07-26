@@ -15,30 +15,18 @@ HTTPS.
 
 ## Last session
 
-- Installed and applied the `frontend-design` skill.
-- Built the responsive product site with accessible semantic HTML, a deliberate
-  type and color system, native-style product mockups, reduced-motion support,
-  metadata, favicons, and hand-rolled reveal animations.
-- Added the permanent latest-release download URL and client-side GitHub release
-  version display with a graceful fallback.
-- Changed release packaging to produce `dist/StudyBlock.dmg`, uploaded the
-  stable 1.0.2 asset, verified it, and removed the obsolete versioned asset.
-- Made the repository public, enabled GitHub Pages, configured the custom domain,
-  created and verified the DNS-only Cloudflare CNAME, and enabled HTTPS.
+- Fixed the Nudge Ladder feature card collision by moving all feature-card
+  diagrams from absolute positioning into normal flex flow.
+- Verified Chrome Blocking, Nudge Ladder, Floating Timer, and Private Streaks
+  at desktop and mobile widths, including reduced-motion mode.
 
 ## Verification
 
+- Local geometry checks at 1280, 720, and 390 px found zero feature-card
+  overlap and zero horizontal overflow.
+- Reduced-motion emulation left all cards fully visible, untransformed, and
+  collision-free.
 - HTML validation and JavaScript syntax checks passed.
-- Desktop and 390 px responsive checks found no horizontal overflow.
-- Live HTTPS rendered `v1.0.2` from the unauthenticated GitHub API with no
-  browser console warnings.
-- The GitHub repository returned HTTP 200 without authentication.
-- The permanent latest-release URL downloaded `StudyBlock.dmg`; its SHA-256 is
-  `1b1590b6ede9a5a12883876a585961750d76ac62335445dcd3dd4ee8ab102b7e`,
-  matching the uploaded file, and `hdiutil verify` passed.
-- GitHub Pages reports the site built, its certificate approved, and HTTPS
-  enforcement enabled. HTTP redirects to HTTPS and the live HTTPS page returns
-  200.
 - All smoke checks passed, and `./script/build_and_run.sh --verify` built and
   launched the app through the Command Line Tools fallback.
 
