@@ -6,52 +6,62 @@ import Observation
 @Observable
 final class TimerCoordinator {
     private(set) var isRunning = false
-    private(set) var remainingSeconds = 25 * 60
-    private(set) var durationSeconds = 25 * 60
+    private(set) var displaySeconds = 60 * 60
+    private(set) var durationSeconds: Int?
+    private(set) var sessionStartDate: Date?
     private(set) var sessionEndDate: Date?
+    var selectedPreset: SessionPreset = .sixty
     var isPanelVisible = true
 
     @ObservationIgnored var presentationHandler: ((Bool) -> Void)?
-    @ObservationIgnored var sessionStateHandler: ((Bool, Date?) -> Void)?
+    @ObservationIgnored var sessionStateHandler: ((Bool, Date?, Date?) -> Void)?
     @ObservationIgnored private var timer: Timer?
 
-    var formattedRemaining: String {
-        let minutes = remainingSeconds / 60
-        let seconds = remainingSeconds % 60
+    var isOpenEnded: Bool {
+        isRunning && durationSeconds == nil
+    }
+
+    var formattedTime: String {
+        let hours = displaySeconds / 3_600
+        let minutes = (displaySeconds % 3_600) / 60
+        let seconds = displaySeconds % 60
+        if hours > 0 {
+            return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+        }
         return String(format: "%02d:%02d", minutes, seconds)
     }
 
     var progress: Double {
-        guard durationSeconds > 0 else { return 0 }
-        return 1 - Double(remainingSeconds) / Double(durationSeconds)
+        guard let durationSeconds, durationSeconds > 0 else { return 0 }
+        return 1 - Double(displaySeconds) / Double(durationSeconds)
     }
 
-    func prepare(minutes: Int) {
-        guard !isRunning else { return }
-        let seconds = max(1, minutes) * 60
-        durationSeconds = seconds
-        remainingSeconds = seconds
-    }
-
-    func start(minutes: Int) {
+    func start(preset: SessionPreset? = nil) {
         stopTicker()
-        durationSeconds = max(1, minutes) * 60
-        remainingSeconds = durationSeconds
-        sessionEndDate = Date().addingTimeInterval(TimeInterval(durationSeconds))
+        let preset = preset ?? selectedPreset
+        selectedPreset = preset
+        let now = Date()
+        sessionStartDate = now
+        durationSeconds = preset.durationMinutes.map { $0 * 60 }
+        displaySeconds = durationSeconds ?? 0
+        sessionEndDate = durationSeconds.map {
+            now.addingTimeInterval(TimeInterval($0))
+        }
         isRunning = true
         isPanelVisible = true
         presentationHandler?(true)
-        sessionStateHandler?(true, sessionEndDate)
+        sessionStateHandler?(true, sessionStartDate, sessionEndDate)
         scheduleTicker()
     }
 
     func stop() {
         stopTicker()
         isRunning = false
+        sessionStartDate = nil
         sessionEndDate = nil
-        remainingSeconds = durationSeconds
+        displaySeconds = selectedPreset.durationMinutes.map { $0 * 60 } ?? 0
         presentationHandler?(false)
-        sessionStateHandler?(false, nil)
+        sessionStateHandler?(false, nil, nil)
     }
 
     func togglePanelVisibility() {
@@ -69,14 +79,20 @@ final class TimerCoordinator {
     }
 
     private func tick() {
-        guard let sessionEndDate else { return }
-        remainingSeconds = max(0, Int(ceil(sessionEndDate.timeIntervalSinceNow)))
-        guard remainingSeconds == 0 else { return }
+        guard let sessionStartDate else { return }
+        if let sessionEndDate {
+            displaySeconds = max(0, Int(ceil(sessionEndDate.timeIntervalSinceNow)))
+        } else {
+            displaySeconds = max(0, Int(Date().timeIntervalSince(sessionStartDate)))
+            return
+        }
+        guard displaySeconds == 0 else { return }
         stopTicker()
         isRunning = false
+        self.sessionStartDate = nil
         self.sessionEndDate = nil
         presentationHandler?(false)
-        sessionStateHandler?(false, nil)
+        sessionStateHandler?(false, nil, nil)
         NSSound.beep()
     }
 

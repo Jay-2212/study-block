@@ -50,9 +50,8 @@ final class FloatingTimerPanelController {
         guard let visibleFrame = screen?.visibleFrame else { return }
         let origin = NSPoint(
             x: visibleFrame.maxX - panel.frame.width - 24,
-            y: visibleFrame.midY - panel.frame.height / 2
+            y: visibleFrame.maxY - panel.frame.height - 24
         )
         panel.setFrameOrigin(origin)
     }
 }
-

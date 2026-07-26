@@ -57,8 +57,10 @@ struct AppNudgeView: View {
                 }
                 .buttonStyle(.borderedProminent)
 
-                Button("Give Me 5 Min") {
-                    coordinator.snoozeCurrent()
+                if coordinator.canSnooze {
+                    Button("Give Me 5 Min") {
+                        coordinator.snoozeCurrent()
+                    }
                 }
             }
 
@@ -76,6 +78,15 @@ struct AppNudgeView: View {
                 Text(message)
                     .font(.caption)
                     .foregroundStyle(.red)
+            }
+
+            if coordinator.isStrictMode {
+                Label(
+                    "Strict mode: snooze is off, timers are capped at 5 minutes, and warnings last 10 seconds.",
+                    systemImage: "lock.fill"
+                )
+                .font(.caption)
+                .foregroundStyle(.secondary)
             }
         }
     }

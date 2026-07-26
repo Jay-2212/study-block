@@ -32,7 +32,7 @@ struct StudyBlockApp: App {
         Settings {
             SettingsView()
                 .environment(appModel)
-                .frame(width: 520, height: 360)
+                .frame(width: 560, height: 440)
         }
     }
 }

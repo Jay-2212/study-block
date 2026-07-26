@@ -16,17 +16,35 @@ struct TimerSetupView: View {
                     .font(.largeTitle.bold())
                 Text(
                     appModel.timer.isRunning
-                        ? appModel.timer.formattedRemaining
-                        : "\(appModel.settingsStore.settings.sessionDurationMinutes)-minute countdown"
+                        ? appModel.timer.formattedTime
+                        : "Choose how long you want to focus"
                 )
                 .font(appModel.timer.isRunning ? .system(size: 64, weight: .semibold, design: .rounded) : .title2)
                 .monospacedDigit()
                 .foregroundStyle(appModel.timer.isRunning ? .primary : .secondary)
+
+                if appModel.timer.isRunning {
+                    Text(appModel.timer.isOpenEnded ? "elapsed" : "remaining")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .textCase(.uppercase)
+                }
             }
 
-            if appModel.timer.isRunning {
+            if appModel.timer.isRunning && !appModel.timer.isOpenEnded {
                 ProgressView(value: appModel.timer.progress)
                     .frame(width: 360)
+            }
+
+            if !appModel.timer.isRunning {
+                Picker("Session length", selection: presetBinding) {
+                    ForEach(SessionPreset.allCases) { preset in
+                        Text(preset.title).tag(preset)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .frame(width: 500)
+                .accessibilityLabel("Session length")
             }
 
             HStack(spacing: 12) {
@@ -42,10 +60,8 @@ struct TimerSetupView: View {
                         appModel.timer.togglePanelVisibility()
                     }
                 } else {
-                    Button("Start Focus Session") {
-                        appModel.timer.start(
-                            minutes: appModel.settingsStore.settings.sessionDurationMinutes
-                        )
+                    Button("Start \(appModel.timer.selectedPreset.title) Session") {
+                        appModel.timer.start()
                     }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)
@@ -55,6 +71,7 @@ struct TimerSetupView: View {
 
             if appModel.timer.isRunning {
                 enforcementStatus
+                sessionModeStatus
             } else {
                 Text("Blocked Chrome tabs and distracting apps are watched only while a session runs.")
                     .font(.callout)
@@ -66,6 +83,13 @@ struct TimerSetupView: View {
         .padding(40)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.background)
+    }
+
+    private var presetBinding: Binding<SessionPreset> {
+        Binding(
+            get: { appModel.timer.selectedPreset },
+            set: { appModel.timer.selectedPreset = $0 }
+        )
     }
 
     @ViewBuilder
@@ -80,6 +104,24 @@ struct TimerSetupView: View {
                 .foregroundStyle(.secondary)
         } else {
             Label("Chrome and distracting apps are being watched", systemImage: "shield")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    @ViewBuilder
+    private var sessionModeStatus: some View {
+        if appModel.settingsStore.settings.strictModeEnabled {
+            Label(
+                "Strict mode: snooze disabled and escalation shortened",
+                systemImage: "lock.fill"
+            )
+            .font(.callout)
+            .foregroundStyle(.secondary)
+        }
+
+        if let message = appModel.doNotDisturb.statusMessage {
+            Label(message, systemImage: "moon.fill")
                 .font(.callout)
                 .foregroundStyle(.secondary)
         }

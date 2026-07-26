@@ -62,4 +62,40 @@ final class AppEscalationStateMachineTests: XCTestCase {
             XCTAssertEqual(error as? AllowanceValidationError, .exceedsLimit)
         }
     }
+
+    func testStrictTimingCapsAllowanceAndShortensWarning() throws {
+        var machine = AppEscalationStateMachine()
+        let start = Date(timeIntervalSince1970: 2_000)
+        _ = machine.observe(app)
+
+        XCTAssertThrowsError(
+            try machine.beginAllowance(
+                bundleIdentifier: app.bundleIdentifier,
+                minutes: 6,
+                now: start,
+                maximumMinutes: 5
+            )
+        )
+
+        try machine.beginAllowance(
+            bundleIdentifier: app.bundleIdentifier,
+            minutes: 1,
+            now: start,
+            maximumMinutes: 5
+        )
+        guard case .showWarning = machine.tick(
+            now: start.addingTimeInterval(60),
+            warningDuration: 10,
+            isAppRunning: { _ in true }
+        ).first else {
+            return XCTFail("Expected strict-mode warning")
+        }
+        guard case .requestQuit = machine.tick(
+            now: start.addingTimeInterval(70),
+            warningDuration: 10,
+            isAppRunning: { _ in true }
+        ).first else {
+            return XCTFail("Expected strict-mode cooperative quit request")
+        }
+    }
 }

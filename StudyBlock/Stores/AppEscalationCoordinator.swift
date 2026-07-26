@@ -7,8 +7,13 @@ import Observation
 final class AppEscalationCoordinator {
     private(set) var currentState: AppEscalationState?
     private(set) var warningRemainingSeconds = 0
+    private(set) var isStrictMode = false
     var timerInput = ""
     var validationMessage: String?
+
+    var canSnooze: Bool { !isStrictMode }
+    var maximumAllowanceMinutes: Int { isStrictMode ? 5 : 15 }
+    var warningDuration: TimeInterval { isStrictMode ? 10 : 30 }
 
     @ObservationIgnored var presentationHandler: ((Bool) -> Void)?
     @ObservationIgnored private let workspaceMonitor = WorkspaceMonitor()
@@ -23,8 +28,9 @@ final class AppEscalationCoordinator {
         }
     }
 
-    func start(blockedApps: [AppChoice]) {
+    func start(blockedApps: [AppChoice], strictMode: Bool) {
         stop()
+        isStrictMode = strictMode
         self.blockedApps = Dictionary(
             uniqueKeysWithValues: blockedApps
                 .filter(Self.isSafeTarget)
@@ -46,6 +52,7 @@ final class AppEscalationCoordinator {
         workspaceMonitor.stop()
         blockedApps.removeAll()
         stateMachine.removeAll()
+        isStrictMode = false
         currentState = nil
         warningRemainingSeconds = 0
         timerInput = ""
@@ -54,7 +61,7 @@ final class AppEscalationCoordinator {
     }
 
     func snoozeCurrent() {
-        guard let currentState else { return }
+        guard canSnooze, let currentState else { return }
         stateMachine.snooze(
             bundleIdentifier: currentState.app.bundleIdentifier,
             now: Date()
@@ -74,7 +81,8 @@ final class AppEscalationCoordinator {
             try stateMachine.beginAllowance(
                 bundleIdentifier: currentState.app.bundleIdentifier,
                 minutes: minutes,
-                now: Date()
+                now: Date(),
+                maximumMinutes: maximumAllowanceMinutes
             )
             dismissPrompt()
         } catch {
@@ -113,6 +121,7 @@ final class AppEscalationCoordinator {
         let now = Date()
         let events = stateMachine.tick(
             now: now,
+            warningDuration: warningDuration,
             isAppRunning: terminationService.isRunning
         )
         events.forEach(handle)
@@ -130,7 +139,7 @@ final class AppEscalationCoordinator {
         case .showNudge(let state):
             show(state)
         case .showWarning(let state):
-            warningRemainingSeconds = 30
+            warningRemainingSeconds = Int(warningDuration)
             show(state)
         case .requestQuit(let state):
             currentState = state

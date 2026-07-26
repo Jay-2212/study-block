@@ -22,6 +22,8 @@
 	<string>15.0</string>
 	<key>NSAppleEventsUsageDescription</key>
 	<string>Study Block reads Chrome tab addresses during setup and active focus sessions, keeps only their domains, and redirects sites on your block list.</string>
+	<key>NSFocusStatusUsageDescription</key>
+	<string>Study Block checks whether a Focus is already active so it can preserve your current setting and restore only Do Not Disturb changes made for a study session.</string>
 	<key>NSHighResolutionCapable</key>
 	<true/>
 	<key>NSPrincipalClass</key>

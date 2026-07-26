@@ -40,9 +40,15 @@ final class SettingsStore {
         save(updated)
     }
 
-    func updateSessionDuration(minutes: Int) {
+    func updateStrictMode(_ isEnabled: Bool) {
         var updated = settings
-        updated.sessionDurationMinutes = minutes
+        updated.strictModeEnabled = isEnabled
+        save(updated)
+    }
+
+    func updateDoNotDisturb(_ isEnabled: Bool) {
+        var updated = settings
+        updated.doNotDisturbEnabled = isEnabled
         save(updated)
     }
 

@@ -60,10 +60,13 @@ struct AppEscalationStateMachine {
     mutating func beginAllowance(
         bundleIdentifier: String,
         minutes: Int,
-        now: Date
+        now: Date,
+        maximumMinutes: Int = 15
     ) throws {
         guard minutes > 0 else { throw AllowanceValidationError.invalid }
-        guard minutes <= 15 else { throw AllowanceValidationError.exceedsLimit }
+        guard minutes <= maximumMinutes else {
+            throw AllowanceValidationError.exceedsLimit
+        }
         update(bundleIdentifier) {
             $0.stage = .allowance(
                 until: now.addingTimeInterval(TimeInterval(minutes * 60))

@@ -1,6 +1,6 @@
 # Study Block Build Plan
 
-> Status: approved on 2026-07-26. Phases 1 and 2 are complete.
+> Status: Phases 1–3 are complete and verified as of 2026-07-26.
 
 ## 1. Agreed product boundaries
 
@@ -39,7 +39,7 @@ The onboarding window contains three ordered steps and can be revisited from Set
 3. **Blacklist**
    - Select distracting domains from presets such as YouTube, Reddit, and X.
    - Select installed games and distracting apps by bundle identifier.
-   - Explain that Phase 1 saves these preferences but Phase 3 adds active enforcement.
+   - Explain that Phase 1 saves these preferences and Phase 2 adds active enforcement.
    - Reject whitelist/blacklist conflicts and ask the user to choose one classification.
 
 Domain extraction must use a registrable-domain/public-suffix-aware resolver rather than blindly taking the last two labels; otherwise domains such as `example.co.uk` are handled incorrectly. `localhost`, IP addresses, invalid text, unsupported schemes, and browser-internal URLs need explicit validation behavior and unit tests.
@@ -47,10 +47,10 @@ Domain extraction must use a registrable-domain/public-suffix-aware resolver rat
 ### Study session
 
 - The menu bar shows whether a session is active and exposes short actions: open Study Block, start/stop the session when appropriate, show/hide the timer, and quit Study Block.
-- A small floating timer appears near the trailing side of the active display during a session.
-- The simplest timer model is a 25-minute countdown by default, adjustable from 5 to 120 minutes in Settings.
+- Session-start presets provide 60, 90, and 120-minute countdowns plus an open-ended elapsed timer.
+- A small floating timer defaults to the top-right of the active display during a session.
 - The timer is movable, stays above ordinary windows, avoids stealing keyboard focus, and remains usable across Spaces. SwiftUI owns timer state; a narrow AppKit panel bridge owns only panel behavior.
-- The main window shows onboarding until completion, then shows Home.
+- Strict mode and session-scoped Do Not Disturb are clearly labeled, persisted settings.
 
 ### Phase 2 app escalation
 
@@ -75,7 +75,7 @@ Stopping the study session clears all active escalation states and pending quit 
 - Separate scenes for Settings and any auxiliary UI.
 - App-wide session coordinator as the single source of truth for session state, active policy, timer state, and escalation events.
 - Small, explicit platform services:
-  - Chrome discovery service: AppleScript adapter in Phase 1, bridge adapter in Phase 3.
+  - Chrome discovery and enforcement service: AppleScript adapter through Phase 3, with a later extension/bridge upgrade remaining optional.
   - Workspace monitor: observes foreground app launches/activations through `NSWorkspace`.
   - App termination service: wraps the cooperative `NSRunningApplication.terminate()` request and observes the result.
   - Floating timer panel controller: the smallest AppKit boundary needed for side placement and non-activating, always-on-top behavior.
@@ -90,7 +90,7 @@ The extension is not part of Phase 2. It is a later optional strict-mode upgrade
 - Uses the blacklist as a supplemental explicit-distraction classification for blocked-page copy, events, and future escalation behavior.
 - Stores only the latest normalized policy, session status/expiry, and minimal bridge metadata in `chrome.storage.local`.
 - Reports block events to the app for statistics without sending page paths, query strings, titles, or content.
-- Does not rely on AppleScript after Phase 3.
+- Replaces AppleScript only if the optional extension phase is built and verified.
 
 ### Native messaging bridge
 
@@ -118,7 +118,7 @@ Use versioned, atomic JSON files in Application Support as the app’s authorita
   - normalized blacklisted domains
   - whitelisted app bundle identifiers
   - blacklisted app bundle identifiers
-  - timer preferences
+  - strict-mode and session Do Not Disturb preferences
 - `StudySession`
   - start/end timestamps
   - planned and actual active duration
@@ -190,26 +190,29 @@ The extension keeps only a disposable policy cache. The app’s JSON store remai
 - The warned quit targets only the selected distracting app and never Study Block.
 - The Command Line Tools fallback build succeeds, launches the fresh app, and verifies its process.
 
-### Phase 3 — Home and local statistics
+### Phase 3 — Full session experience
+
+**Status: Complete and verified on 2026-07-26.**
 
 **Scope**
 
-- Add Home after onboarding.
-- Add start/stop session controls to Home and keep them synchronized with the menu bar.
-- Show hours studied, apps blocked, and productive hours.
-- Define hours studied as all elapsed session time. Define productive hours as time in sessions that reach their planned countdown rather than being stopped early.
-- Finalize `StudySession` and `BlockEvent` persistence and aggregation rules.
-- Add empty, active-session, and historical states.
-- Add focused tests for session timing, stop/relaunch recovery, midnight boundaries, stat aggregation, and duplicate block events.
+- Replace the freeform timer setup with session-start presets for 60, 90, and 120 minutes plus an open-ended session.
+- Show a compact, draggable, always-on-top floating clock at the top-right of the active display. Count down planned sessions and count up open-ended sessions.
+- Add a clearly labeled persisted strict-mode setting. Strict mode disables snooze and shortens the app-escalation allowance and warning timings.
+- Pause Music and Spotify when they are distracting during a session, while respecting the productive-app allow list.
+- Add a persisted Do Not Disturb session toggle. When enabled, turn Do Not Disturb on at session start and restore its prior state when the session ends.
+- Preserve enforcement invariants: study domains always beat the blocklist, Study Block never targets itself, and warned quit only requests termination of the distracting app.
+- Add focused tests and smoke coverage for session presets, open-ended timing, strict escalation timing, and allow-list precedence.
 
 **Verifiable exit criteria**
 
-- Home replaces onboarding after completion and Settings can reopen onboarding choices.
-- Start/stop from either Home or the menu bar updates every surface consistently.
-- Session duration persists across relaunch and is counted exactly once.
-- Real Phase 2 enforcement events feed the app-blocked statistic without retry inflation.
-- Seeded fixtures produce known values for all three stats.
-- Empty and zero states are clear and do not fabricate activity.
+- A 60-minute session starts from the app and displays the floating clock at the top-right.
+- The floating clock remains above ordinary windows and can be dragged without stealing keyboard focus.
+- Open-ended sessions show elapsed time rather than a countdown.
+- Strict mode visibly disables snooze and uses the shorter escalation schedule.
+- Music and Spotify are paused during sessions unless their bundle identifiers are allow-listed.
+- With the Do Not Disturb toggle enabled, a session enables Do Not Disturb and ending the session restores the previous state.
+- The Command Line Tools fallback build succeeds, launches the fresh app, and verifies its process.
 
 ### Optional later phase — Chrome extension strict mode
 
@@ -265,12 +268,14 @@ The extension keeps only a disposable policy cache. The app’s JSON store remai
 | Redirect Chrome tabs through AppleScript | 2 | Reuses the Apple Events entitlement and automation approval. Enforcement is polling-based and intentionally bypassable. |
 | Observe ordinary app launches/activation | 2 | Use `NSWorkspace`; do not request Accessibility permission by default. Background/agent-only apps are outside the product scope. |
 | Quit distracting apps | 2 | `NSRunningApplication.terminate()` is cooperative and can fail. A sandboxed app cannot terminate other apps. |
+| Pause Music and Spotify | 3 | Reuses Apple Events permission and applies only while a session runs; allow-listed bundle identifiers are excluded. |
+| Toggle Do Not Disturb | 3 | Uses the documented Control Center shortcut through a narrow Accessibility bridge because macOS exposes Focus status, but no public Focus setter. Preserve any existing Focus and restore only a change made by Study Block. |
 | Chrome extension tab discovery | Optional strict mode | Requires narrowly explained Chrome extension permissions such as `tabs`, plus `nativeMessaging`, `storage`, and declarative network request/host access appropriate to the final rule design. |
 | Chrome extension redirects | Optional strict mode | Broad host access may create a prominent install warning and Chrome Web Store review/privacy obligations. Request only what blocking requires. |
 | Native messaging | Optional strict mode | Requires installing a per-user host manifest with an absolute host path and fixed allowed extension origin; app/helper upgrade paths must preserve registration. |
 | Direct distribution | Release | The core quit behavior points to Developer ID signing, hardened runtime, and notarized distribution outside the Mac App Store, with App Sandbox disabled. |
 
-No Screen Recording, Full Disk Access, Accessibility, administrator privileges, kernel/system extension, or privileged helper is planned.
+No Screen Recording, Full Disk Access, administrator privileges, kernel/system extension, or privileged helper is planned. Accessibility is optional and requested only when the user enables session-scoped Do Not Disturb.
 
 ## 7. Main risks and mitigations
 
@@ -290,7 +295,7 @@ No Screen Recording, Full Disk Access, Accessibility, administrator privileges, 
 ## 8. Review gates
 
 - **Completed:** Phase 2 AppleScript enforcement behavior, permanent allowed domains, and app escalation behavior were approved and verified.
-- **Before Phase 3:** apply the approved metric definitions above and validate them with fixtures.
+- **Completed:** Phase 3 session presets, strict timing, music blocking policy, floating clock placement, open-ended timing, and real Do Not Disturb activation/restoration were implemented and verified.
 - **Before optional strict mode:** review the onboarding registration/repair experience and allowlist-first redirect rule design.
 - **Before release:** review extension permissions, privacy copy, signing, native-host installation/repair, and clean-machine behavior.
 

@@ -51,6 +51,40 @@ enum EscalationSmoke {
             rejected = true
         }
         guard rejected else { fatalError("16-minute timer must be rejected") }
+
+        var strict = AppEscalationStateMachine()
+        _ = strict.observe(app)
+        do {
+            try strict.beginAllowance(
+                bundleIdentifier: app.bundleIdentifier,
+                minutes: 6,
+                now: start,
+                maximumMinutes: 5
+            )
+            fatalError("Strict mode must reject timers above 5 minutes")
+        } catch AllowanceValidationError.exceedsLimit {
+            // Expected.
+        }
+        try strict.beginAllowance(
+            bundleIdentifier: app.bundleIdentifier,
+            minutes: 1,
+            now: start,
+            maximumMinutes: 5
+        )
+        guard case .showWarning = strict.tick(
+            now: start.addingTimeInterval(60),
+            warningDuration: 10,
+            isAppRunning: { _ in true }
+        ).first else {
+            fatalError("Expected strict warning")
+        }
+        guard case .requestQuit = strict.tick(
+            now: start.addingTimeInterval(70),
+            warningDuration: 10,
+            isAppRunning: { _ in true }
+        ).first else {
+            fatalError("Expected strict cooperative quit")
+        }
         print("App escalation smoke checks passed.")
     }
 }

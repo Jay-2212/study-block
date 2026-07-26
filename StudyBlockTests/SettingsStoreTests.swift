@@ -17,5 +17,21 @@ final class SettingsStoreTests: XCTestCase {
         XCTAssertEqual(SettingsStore(fileURL: fileURL).settings, expected)
         try? FileManager.default.removeItem(at: directory)
     }
-}
 
+    func testLegacySettingsDefaultPhaseThreeOptionsOff() throws {
+        let data = Data("""
+        {
+          "hasCompletedOnboarding": true,
+          "whitelistedDomains": [],
+          "blacklistedDomains": [],
+          "whitelistedApps": [],
+          "blacklistedApps": [],
+          "sessionDurationMinutes": 25
+        }
+        """.utf8)
+
+        let settings = try JSONDecoder().decode(AppSettings.self, from: data)
+        XCTAssertFalse(settings.strictModeEnabled)
+        XCTAssertFalse(settings.doNotDisturbEnabled)
+    }
+}

@@ -7,7 +7,7 @@ struct MenuBarContentView: View {
 
     var body: some View {
         if appModel.timer.isRunning {
-            Label(appModel.timer.formattedRemaining, systemImage: "timer")
+            Label(appModel.timer.formattedTime, systemImage: "timer")
                 .monospacedDigit()
             Divider()
             Button(
@@ -19,10 +19,12 @@ struct MenuBarContentView: View {
                 appModel.timer.stop()
             }
         } else if appModel.settingsStore.settings.hasCompletedOnboarding {
-            Button("Start Focus Session") {
-                appModel.timer.start(
-                    minutes: appModel.settingsStore.settings.sessionDurationMinutes
-                )
+            Menu("Start Session") {
+                ForEach(SessionPreset.allCases) { preset in
+                    Button(preset.title) {
+                        appModel.timer.start(preset: preset)
+                    }
+                }
             }
         } else {
             Text("Finish onboarding to focus")
@@ -44,4 +46,3 @@ struct MenuBarContentView: View {
         .keyboardShortcut("q")
     }
 }
-

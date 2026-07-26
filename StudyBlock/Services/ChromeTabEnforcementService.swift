@@ -14,12 +14,18 @@ final class ChromeTabEnforcementService: WebEnforcementProvider {
 
     private let blockPage = BlockPageService()
     private var policy = WebEnforcementPolicy(blacklistedDomains: [])
-    private var sessionEndDate = Date()
+    private var sessionStartDate = Date()
+    private var sessionEndDate: Date?
     private var pollTimer: Timer?
 
-    func start(policy: WebEnforcementPolicy, sessionEndDate: Date) {
+    func start(
+        policy: WebEnforcementPolicy,
+        sessionStartDate: Date,
+        sessionEndDate: Date?
+    ) {
         stop()
         self.policy = policy
+        self.sessionStartDate = sessionStartDate
         self.sessionEndDate = sessionEndDate
 
         do {
@@ -109,6 +115,7 @@ final class ChromeTabEnforcementService: WebEnforcementProvider {
         let commands = blockedTabs.map { tab, domain in
             let destination = blockPage.url(
                 blockedDomain: domain,
+                sessionStartDate: sessionStartDate,
                 sessionEndDate: sessionEndDate
             ).absoluteString
             return """

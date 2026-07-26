@@ -2,19 +2,19 @@
 
 ## Current state
 
-Phases 1 and 2 are complete. During an active session, Study Block now redirects explicitly blacklisted Chrome tabs through AppleScript to a calm local countdown page and monitors blacklisted native apps with the full escalation ladder. Google, ChatGPT, and Claude are permanently allowed. The app is built and open at the idle session screen.
+Phases 1–3 are complete. Study Block now offers 60, 90, and 120-minute sessions plus open-ended timing; a draggable, always-on-top clock defaults to the top-right; strict mode removes snooze and shortens escalation; Music and Spotify are paused unless allow-listed; and optional session-scoped Do Not Disturb preserves an existing Focus and restores only the state Study Block changed.
 
 ## Last session summary
 
-Shipped Phase 2 with a provider boundary for optional strict mode, AppleScript Chrome polling, blacklist-only redirects, the Application Support `block.html` countdown page, `NSWorkspace` app activation monitoring, a per-app escalation state machine, a SwiftUI nudge panel, hidden 15-minute timer validation, warned cooperative termination, and focused policy/state-machine tests.
+Shipped the Phase 3 full-session experience with persisted strict/DND settings, countdown and elapsed session modes, preset start actions in the main window and menu bar, open-ended-aware Chrome block pages, a top-right nonactivating panel, strict escalation parameters, allow-list-aware music pausing, and a narrow Accessibility-backed DND bridge.
 
-Live verification used the persisted onboarding policy (`youtube.com` and TextEdit). During a real 25-minute session, YouTube redirected to the local block page within two seconds while Google, ChatGPT, and Claude URLs stayed unchanged. TextEdit exercised gentle nudge → five-minute snooze → returning nudge → rejected 16-minute timer → accepted one-minute timer → visible 30-second warning → cooperative quit. TextEdit closed; Study Block and Chrome remained running. Stopping the session disabled redirects immediately.
+Live verification started a real 60-minute session and confirmed the floating panel at `x=1268, y=57`, 24 points from the active display’s top-right usable edge. Open-ended mode displayed elapsed time. Strict mode was visible in-session, disabled snooze, capped allowances at five minutes, and used a ten-second warning; the focused smoke test exercised the shortened transition.
 
-`./script/run_smoke_tests.sh` and `./script/build_and_run.sh --verify` pass through the Command Line Tools fallback.
+With the project-local app enabled in Accessibility, starting a session created a live `com.apple.controlcenter.dnd` assertion and showed “Do Not Disturb is on for this session.” Stopping invalidated that same assertion and restored the prior off state. `./script/run_smoke_tests.sh` and `./script/build_and_run.sh --verify` pass through the Command Line Tools fallback.
 
 ## Next steps
 
-Review Phase 2. After approval, begin Phase 3 only: Home, persisted session/block events, and local statistics. The Chrome extension and native messaging host remain an optional later strict-mode upgrade if AppleScript enforcement proves insufficient.
+Review Phase 3. The Chrome extension/native messaging host remains an optional later upgrade if AppleScript enforcement proves insufficient. Before distribution, resolve the local Glaze app’s shared `com.jay.studyblock` bundle identity so LaunchServices and privacy permissions cannot collide.
 
 ## Open questions
 

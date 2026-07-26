@@ -7,12 +7,14 @@ final class AppModel {
     let timer: TimerCoordinator
     let onboarding: OnboardingModel
     let appEscalation: AppEscalationCoordinator
+    let doNotDisturb: DoNotDisturbService
     private(set) var lastBlockedDomain: String?
     private(set) var enforcementMessage: String?
 
     @ObservationIgnored private var timerPanelController: FloatingTimerPanelController!
     @ObservationIgnored private var nudgePanelController: NudgePanelController!
     @ObservationIgnored private var webEnforcement: WebEnforcementProvider!
+    @ObservationIgnored private let musicBlocking = MusicBlockingService()
 
     init() {
         let settingsStore = SettingsStore()
@@ -21,7 +23,7 @@ final class AppModel {
         self.timer = timer
         onboarding = OnboardingModel(settingsStore: settingsStore)
         appEscalation = AppEscalationCoordinator()
-        timer.prepare(minutes: settingsStore.settings.sessionDurationMinutes)
+        doNotDisturb = DoNotDisturbService()
 
         timerPanelController = FloatingTimerPanelController(timer: timer)
         nudgePanelController = NudgePanelController(coordinator: appEscalation)
@@ -49,9 +51,9 @@ final class AppModel {
         chromeEnforcement.errorHandler = { [weak self] message in
             self?.enforcementMessage = message
         }
-        timer.sessionStateHandler = { [weak self] isRunning, endDate in
+        timer.sessionStateHandler = { [weak self] isRunning, startDate, endDate in
             guard let self else { return }
-            if isRunning, let endDate {
+            if isRunning, let startDate {
                 let settings = self.settingsStore.settings
                 self.lastBlockedDomain = nil
                 self.enforcementMessage = nil
@@ -59,12 +61,24 @@ final class AppModel {
                     policy: WebEnforcementPolicy(
                         blacklistedDomains: settings.blacklistedDomains
                     ),
+                    sessionStartDate: startDate,
                     sessionEndDate: endDate
                 )
-                self.appEscalation.start(blockedApps: settings.blacklistedApps)
+                self.appEscalation.start(
+                    blockedApps: settings.blacklistedApps,
+                    strictMode: settings.strictModeEnabled
+                )
+                self.musicBlocking.start(
+                    allowedBundleIdentifiers: Set(
+                        settings.whitelistedApps.map(\.bundleIdentifier)
+                    )
+                )
+                self.doNotDisturb.start(enabled: settings.doNotDisturbEnabled)
             } else {
                 self.webEnforcement.stop()
                 self.appEscalation.stop()
+                self.musicBlocking.stop()
+                self.doNotDisturb.stop()
             }
         }
     }

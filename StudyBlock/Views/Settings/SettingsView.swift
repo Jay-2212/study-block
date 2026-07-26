@@ -6,13 +6,16 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            Section("Focus timer") {
-                Stepper(
-                    "\(appModel.settingsStore.settings.sessionDurationMinutes) minutes",
-                    value: durationBinding,
-                    in: 5...120,
-                    step: 5
-                )
+            Section("Session enforcement") {
+                Toggle("Strict mode", isOn: strictModeBinding)
+                Text("Disables snooze, caps app timers at 5 minutes, and shortens the final warning to 10 seconds.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                Toggle("Do Not Disturb during sessions", isOn: doNotDisturbBinding)
+                Text("Uses Accessibility to toggle Control Center. An existing Focus is preserved and Study Block restores only what it changed.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
 
             Section("Onboarding") {
@@ -36,13 +39,17 @@ struct SettingsView: View {
         .padding()
     }
 
-    private var durationBinding: Binding<Int> {
+    private var strictModeBinding: Binding<Bool> {
         Binding(
-            get: { appModel.settingsStore.settings.sessionDurationMinutes },
-            set: { newValue in
-                appModel.settingsStore.updateSessionDuration(minutes: newValue)
-                appModel.timer.prepare(minutes: newValue)
-            }
+            get: { appModel.settingsStore.settings.strictModeEnabled },
+            set: { appModel.settingsStore.updateStrictMode($0) }
+        )
+    }
+
+    private var doNotDisturbBinding: Binding<Bool> {
+        Binding(
+            get: { appModel.settingsStore.settings.doNotDisturbEnabled },
+            set: { appModel.settingsStore.updateDoNotDisturb($0) }
         )
     }
 }

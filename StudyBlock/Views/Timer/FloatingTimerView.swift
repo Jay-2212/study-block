@@ -13,7 +13,7 @@ struct FloatingTimerView: View {
                 Text("Focus")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                Text(timer.formattedRemaining)
+                Text(timer.formattedTime)
                     .font(.title2.weight(.semibold))
                     .monospacedDigit()
             }
@@ -25,7 +25,8 @@ struct FloatingTimerView: View {
         .padding(5)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Focus timer")
-        .accessibilityValue(timer.formattedRemaining)
+        .accessibilityValue(
+            "\(timer.formattedTime) \(timer.isOpenEnded ? "elapsed" : "remaining")"
+        )
     }
 }
-
