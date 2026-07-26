@@ -2,55 +2,87 @@
 
 ![Study Block app icon](Design/AppIconMaster.png)
 
-A native macOS focus companion that keeps study sessions visible and distractions out of the way.
+Study Block is a native macOS focus app for keeping a study session visible and
+reducing distractions while it runs. It has a regular app window, a menu bar
+control, and a small floating timer.
 
 ## Features
 
-- **Editable session presets** — configure three timed presets or use an open-ended timer.
-- **Floating clock** — keep a small, always-on-top countdown or elapsed-time clock within sight while you work.
-- **AppleScript enforcement** — redirect explicitly blocked Chrome sites to a calm local session page while productive and study domains remain available.
-- **Nudge ladder** — respond to distracting apps with a gentle reminder, a limited allowance, a visible warning, and finally a cooperative quit request.
-- **Strict mode** — disable snoozing and shorten escalation timing when you want a firmer session.
-- **Session environment** — pause distracting music apps and optionally enable Do Not Disturb for the duration of a session.
-- **Live settings** — edit study sites, blocked sites and apps, session presets, and session defaults after onboarding.
-- **Local history and stats** — review completed sessions, today and weekly focus time, and your current streak.
-- **macOS integration** — launch at login, recover an interrupted session, and suspend enforcement cleanly across sleep and wake.
+- Timed presets and an open-ended session option
+- A draggable, always-on-top floating timer
+- Chrome tab enforcement that redirects blocked sites during a session
+- An app nudge ladder: reminder, short allowance, warning, then a cooperative
+  quit request
+- Strict mode with shorter escalation timing and no snoozing
+- Optional session-scoped Do Not Disturb and music pausing
+- Editable study sites, blocked sites and apps, presets, and defaults
+- Local session history, weekly focus time, and streaks
+- Launch at login and interrupted-session recovery
 
-Study sites always beat the blocklist, and Google, ChatGPT, and Claude remain available. Study Block keeps settings, session checkpoints, and history on your Mac. It never force-quits apps, and its final enforcement step targets only the distracting app.
+Study sites take precedence over the blocklist. Google, ChatGPT, and Claude are
+always available. Settings, session checkpoints, and history stay on your Mac,
+and Study Block never force-quits another app.
+
+## Download
+
+Download the current DMG from the
+[latest GitHub release](https://github.com/Jay-2212/study-block/releases/latest).
+
+1. Open `Study-Block.dmg`.
+2. Drag **Study Block** to **Applications**.
+3. Because this build is unsigned and not notarized, Control-click or
+   right-click the app in Applications, choose **Open**, then confirm **Open**.
+   This is normally required only the first time.
+
+The release is built for Apple silicon.
 
 ## Requirements
 
 - macOS 15 or later
-- Apple Command Line Tools
+- Google Chrome for tab enforcement
+- Apple silicon for the downloadable build
 
-Xcode is supported but not required for local development. Developer ID signing
-and notarization require Apple distribution credentials and the appropriate
-Xcode tooling.
+Do Not Disturb control and Chrome tab enforcement may prompt for macOS
+permissions when first used.
 
-## Build and run
+## Build from source
 
-From the project root:
-
-```sh
-./script/build_and_run.sh
-```
-
-The script uses Xcode when it is installed. Otherwise, it compiles with the Apple Command Line Tools, creates and ad-hoc signs a local app bundle, and launches it.
-
-To build, launch, and confirm that the app process is running:
+You need macOS 15 or later and either Xcode or the Apple Command Line Tools.
+Clone the repository, then run from the project root:
 
 ```sh
+git clone https://github.com/Jay-2212/study-block.git
+cd study-block
 ./script/build_and_run.sh --verify
 ```
 
-Run the lightweight domain, policy, escalation, settings, and session-history
-checks with:
+The script uses Xcode when available. Otherwise, it compiles with the Apple
+Command Line Tools, creates an ad-hoc signed app bundle, launches it, and checks
+that the process is running.
+
+For an optimized Release build:
+
+```sh
+./script/build_and_run.sh --release --verify
+```
+
+Run the focused smoke tests with:
 
 ```sh
 ./script/run_smoke_tests.sh
 ```
 
-## Project structure
+With Command Line Tools, the built app is written to
+`.build/Release/Study Block.app`. Xcode builds use `.build/DerivedData`.
+
+## Privacy and behavior
+
+Chrome inspection runs only during onboarding and active sessions. Study Block
+stores normalized domains rather than full browsing URLs. It suspends
+session-owned enforcement across sleep and restores Chrome tabs it redirected
+when a session stops or the app quits normally.
+
+## Project layout
 
 ```text
 StudyBlock/
@@ -65,3 +97,7 @@ StudyBlockTests/  Focused policy, persistence, and state-machine tests
 script/           Canonical build, launch, and smoke-test commands
 Design/           Source artwork, including the 1024 px icon master
 ```
+
+## License
+
+Study Block is available under the [MIT License](LICENSE).

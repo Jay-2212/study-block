@@ -1,16 +1,32 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MODE="${1:-run}"
+MODE="run"
+CONFIGURATION="Debug"
 APP_NAME="Study Block"
 PROJECT_NAME="StudyBlock"
 BUNDLE_ID="com.jay.studyblock"
+
+for argument in "$@"; do
+  case "$argument" in
+    run|--debug|debug|--logs|logs|--telemetry|telemetry|--verify|verify)
+      MODE="$argument"
+      ;;
+    --release|release)
+      CONFIGURATION="Release"
+      ;;
+    *)
+      echo "usage: $0 [run|--debug|--logs|--telemetry|--verify] [--release]" >&2
+      exit 2
+      ;;
+  esac
+done
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PROJECT_PATH="$PROJECT_ROOT/StudyBlock.xcodeproj"
 LOCAL_BUILD_DIR="$PROJECT_ROOT/.build"
 DERIVED_DATA_DIR="$LOCAL_BUILD_DIR/DerivedData"
-FALLBACK_APP="$LOCAL_BUILD_DIR/$APP_NAME.app"
+FALLBACK_APP="$LOCAL_BUILD_DIR/$CONFIGURATION/$APP_NAME.app"
 
 pkill -x "$APP_NAME" >/dev/null 2>&1 || true
 
@@ -35,11 +51,11 @@ build_with_xcode() {
   DEVELOPER_DIR="$developer_dir" xcodebuild \
     -project "$PROJECT_PATH" \
     -scheme "$PROJECT_NAME" \
-    -configuration Debug \
+    -configuration "$CONFIGURATION" \
     -destination "platform=macOS" \
     -derivedDataPath "$DERIVED_DATA_DIR" \
     build
-  APP_BUNDLE="$DERIVED_DATA_DIR/Build/Products/Debug/$APP_NAME.app"
+  APP_BUNDLE="$DERIVED_DATA_DIR/Build/Products/$CONFIGURATION/$APP_NAME.app"
   APP_BINARY="$APP_BUNDLE/Contents/MacOS/$APP_NAME"
 }
 
@@ -63,10 +79,18 @@ build_with_command_line_tools() {
     sources+=("$source")
   done < <(find "$PROJECT_ROOT/StudyBlock" -name '*.swift' -type f | sort)
 
+  local optimization_flags=()
+  if [[ "$CONFIGURATION" == "Release" ]]; then
+    optimization_flags=(-O -whole-module-optimization)
+  else
+    optimization_flags=(-Onone)
+  fi
+
   xcrun swiftc \
     -parse-as-library \
     -sdk "$sdk_path" \
     -target arm64-apple-macos15.0 \
+    "${optimization_flags[@]}" \
     -framework AppKit \
     -framework SwiftUI \
     -framework Foundation \
@@ -117,7 +141,7 @@ case "$MODE" in
     exit 1
     ;;
   *)
-    echo "usage: $0 [run|--debug|--logs|--telemetry|--verify]" >&2
+    echo "usage: $0 [run|--debug|--logs|--telemetry|--verify] [--release]" >&2
     exit 2
     ;;
 esac
