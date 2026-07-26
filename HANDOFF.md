@@ -2,20 +2,71 @@
 
 ## Current state
 
-Phases 1–3 are complete. Study Block now offers 60, 90, and 120-minute sessions plus open-ended timing; a draggable, always-on-top clock defaults to the top-right; strict mode removes snooze and shortens escalation; Music and Spotify are paused unless allow-listed; and optional session-scoped Do Not Disturb preserves an existing Focus and restores only the state Study Block changed.
+Study Block development is complete through Phase 4. The app has editable
+post-onboarding settings, configurable presets, local completed-session history
+and stats, launch at login, interrupted-session recovery, session-only Chrome
+and music polling, sleep/wake handling, and deterministic stop/Quit teardown.
 
-## Last session summary
+The working defaults remain 60/90/120 minutes, strict mode on, session DND on,
+`youtube.com` blocked, and the user’s original allow/block selections intact.
+Phase 4 QA added two short open-ended entries to local session history.
 
-Shipped the Phase 3 full-session experience with persisted strict/DND settings, countdown and elapsed session modes, preset start actions in the main window and menu bar, open-ended-aware Chrome block pages, a top-right nonactivating panel, strict escalation parameters, allow-list-aware music pausing, and a narrow Accessibility-backed DND bridge.
+## Phase 4 verification
 
-Live verification started a real 60-minute session and confirmed the floating panel at `x=1268, y=57`, 24 points from the active display’s top-right usable edge. Open-ended mode displayed elapsed time. Strict mode was visible in-session, disabled snooze, capped allowances at five minutes, and used a ten-second warning; the focused smoke test exercised the shortened transition.
+- `./script/run_smoke_tests.sh`: passed domain, policy, escalation, settings
+  persistence, and session-history checks.
+- `./script/build_and_run.sh --verify`: passed through the Command Line Tools
+  fallback and launched the fresh app.
+- Settings: temporarily added `reddit.com`, edited the first preset from 60 to
+  65 minutes during a session, confirmed the main UI updated live, then restored
+  60 minutes and removed the temporary domain.
+- Policy: Reddit and YouTube redirected to the local block page; stopping the
+  session restored the original URL. Google/ChatGPT/Claude precedence is covered
+  by policy and settings smoke checks.
+- Clock: hide/show worked; the live panel was `178 × 78` at `x=1268, y=57`,
+  floating layer 3 at the active display’s top-right.
+- Strict/nudges: strict mode remained visible and the full escalation state
+  machine smoke test passed. The external foreground-app focus bridge was
+  unavailable during the final live trigger, so no new destructive app-quit
+  cycle was forced; Phase 2/3 live verification remains valid.
+- DND: the recovered live session reported “Do Not Disturb is on for this
+  session”; stop and Quit exercised the restoration path. Existing Focus
+  preservation remains unchanged from the Phase 3 assertion-level verification.
+- Recovery: a `SIGKILL` session resumed at the original absolute deadline
+  (`59:43` remaining), kept blocking fail-safe, then restored the Chrome tab on
+  stop.
+- Quit: an initial test found teardown was too late in
+  `applicationWillTerminate`; moving it to `applicationShouldTerminate` fixed
+  the issue. The retest restored YouTube before the process exited.
+- Launch at login: enabled successfully, displayed the registered state, then
+  disabled successfully to restore the user’s original preference.
+- Performance: cold process launch measured 76 ms, 53 ms, and 57 ms. Idle CPU
+  sampled at `0.0%`. Warmed footprint was `52 MB` before and after a full
+  start/stop cycle.
+- Leaks: `leaks` reported 19,936 bytes in system framework allocations and no
+  Study Block-owned symbols in leak paths. Timer and observer callbacks use weak
+  ownership; session timers and observers have explicit invalidation/removal.
+- Edge paths: Chrome-absent polling backs off to 10 seconds; sleep suspends
+  enforcement/DND/panels and wake recomputes from absolute dates; corrupt or
+  missing JSON recovers to safe defaults; back-to-back starts end the first
+  session before starting the second.
 
-With the project-local app enabled in Accessibility, starting a session created a live `com.apple.controlcenter.dnd` assertion and showed “Do Not Disturb is on for this session.” Stopping invalidated that same assertion and restored the prior off state. `./script/run_smoke_tests.sh` and `./script/build_and_run.sh --verify` pass through the Command Line Tools fallback.
+## Release prerequisite
+
+The local bundle is correctly ad-hoc signed with the Apple Events entitlement,
+but `spctl` rejects it for distribution because this machine has zero valid
+code-signing identities. Public shipping requires a Developer ID Application
+certificate plus hardened-runtime signing, notarization, stapling, and a
+clean-machine Gatekeeper test. Xcode is still not installed and was not
+downloaded.
 
 ## Next steps
 
-Review Phase 3. The Chrome extension/native messaging host remains an optional later upgrade if AppleScript enforcement proves insufficient. Before distribution, resolve the local Glaze app’s shared `com.jay.studyblock` bundle identity so LaunchServices and privacy permissions cannot collide.
+No feature work remains. When Apple distribution credentials and release tooling
+are available, perform the credentialed signing/notarization pass described
+above. The optional Chrome extension/native messaging provider remains a
+separate future product decision.
 
 ## Open questions
 
-None. Xcode is still not installed; continue using the existing Command Line Tools fallback and do not download Xcode.
+None.

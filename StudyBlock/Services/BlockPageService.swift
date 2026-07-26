@@ -2,6 +2,7 @@ import Foundation
 
 struct BlockPageService {
     private let fileURL: URL
+    var baseURL: URL { fileURL }
 
     init(fileURL: URL? = nil) {
         if let fileURL {
@@ -27,12 +28,14 @@ struct BlockPageService {
 
     func url(
         blockedDomain: String,
+        returnURL: String,
         sessionStartDate: Date,
         sessionEndDate: Date?
     ) -> URL {
         var components = URLComponents(url: fileURL, resolvingAgainstBaseURL: false)!
         components.queryItems = [
             URLQueryItem(name: "domain", value: blockedDomain),
+            URLQueryItem(name: "return", value: returnURL),
             URLQueryItem(
                 name: "start",
                 value: String(Int(sessionStartDate.timeIntervalSince1970 * 1_000))

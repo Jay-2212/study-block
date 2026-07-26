@@ -2,6 +2,22 @@ import AppKit
 import Foundation
 import Observation
 
+enum SessionLifecycleEvent {
+    case started(
+        startDate: Date,
+        endDate: Date?,
+        preset: SessionPreset,
+        plannedDurationMinutes: Int?
+    )
+    case ended(
+        startDate: Date,
+        endDate: Date,
+        preset: SessionPreset,
+        plannedDurationMinutes: Int?,
+        completed: Bool
+    )
+}
+
 @MainActor
 @Observable
 final class TimerCoordinator {
@@ -14,8 +30,9 @@ final class TimerCoordinator {
     var isPanelVisible = true
 
     @ObservationIgnored var presentationHandler: ((Bool) -> Void)?
-    @ObservationIgnored var sessionStateHandler: ((Bool, Date?, Date?) -> Void)?
+    @ObservationIgnored var lifecycleHandler: ((SessionLifecycleEvent) -> Void)?
     @ObservationIgnored private var timer: Timer?
+    @ObservationIgnored private var plannedDurationMinutes: Int?
 
     var isOpenEnded: Bool {
         isRunning && durationSeconds == nil
@@ -36,13 +53,22 @@ final class TimerCoordinator {
         return 1 - Double(displaySeconds) / Double(durationSeconds)
     }
 
-    func start(preset: SessionPreset? = nil) {
+    func start(
+        preset: SessionPreset? = nil,
+        durationMinutes: Int? = nil
+    ) {
+        if isRunning {
+            finish(completed: false, shouldBeep: false)
+        }
         stopTicker()
         let preset = preset ?? selectedPreset
         selectedPreset = preset
         let now = Date()
         sessionStartDate = now
-        durationSeconds = preset.durationMinutes.map { $0 * 60 }
+        plannedDurationMinutes = preset == .openEnded
+            ? nil
+            : max(1, durationMinutes ?? preset.durationMinutes ?? 60)
+        durationSeconds = plannedDurationMinutes.map { $0 * 60 }
         displaySeconds = durationSeconds ?? 0
         sessionEndDate = durationSeconds.map {
             now.addingTimeInterval(TimeInterval($0))
@@ -50,24 +76,78 @@ final class TimerCoordinator {
         isRunning = true
         isPanelVisible = true
         presentationHandler?(true)
-        sessionStateHandler?(true, sessionStartDate, sessionEndDate)
+        lifecycleHandler?(
+            .started(
+                startDate: now,
+                endDate: sessionEndDate,
+                preset: preset,
+                plannedDurationMinutes: plannedDurationMinutes
+            )
+        )
+        scheduleTicker()
+    }
+
+    func restore(_ snapshot: ActiveSessionSnapshot) {
+        guard !isRunning else { return }
+        selectedPreset = snapshot.preset
+        sessionStartDate = snapshot.startDate
+        sessionEndDate = snapshot.endDate
+        plannedDurationMinutes = snapshot.plannedDurationMinutes
+        durationSeconds = snapshot.plannedDurationMinutes.map { $0 * 60 }
+        isRunning = true
+        isPanelVisible = true
+        reconcileTime()
+        guard isRunning else { return }
+        presentationHandler?(true)
+        lifecycleHandler?(
+            .started(
+                startDate: snapshot.startDate,
+                endDate: snapshot.endDate,
+                preset: snapshot.preset,
+                plannedDurationMinutes: snapshot.plannedDurationMinutes
+            )
+        )
         scheduleTicker()
     }
 
     func stop() {
-        stopTicker()
-        isRunning = false
-        sessionStartDate = nil
-        sessionEndDate = nil
-        displaySeconds = selectedPreset.durationMinutes.map { $0 * 60 } ?? 0
-        presentationHandler?(false)
-        sessionStateHandler?(false, nil, nil)
+        let completed = durationSeconds == nil && displaySeconds > 0
+        finish(completed: completed, shouldBeep: false)
     }
 
     func togglePanelVisibility() {
         guard isRunning else { return }
         isPanelVisible.toggle()
         presentationHandler?(isPanelVisible)
+    }
+
+    func suspendForSleep() {
+        stopTicker()
+        presentationHandler?(false)
+    }
+
+    func resumeAfterWake() {
+        guard isRunning else { return }
+        reconcileTime()
+        guard isRunning else { return }
+        if isPanelVisible {
+            presentationHandler?(true)
+        }
+        scheduleTicker()
+    }
+
+    func reconcileTime() {
+        guard isRunning else { return }
+        tick()
+    }
+
+    func terminate() {
+        guard isRunning else {
+            stopTicker()
+            presentationHandler?(false)
+            return
+        }
+        finish(completed: false, shouldBeep: false)
     }
 
     private func scheduleTicker() {
@@ -87,17 +167,40 @@ final class TimerCoordinator {
             return
         }
         guard displaySeconds == 0 else { return }
-        stopTicker()
-        isRunning = false
-        self.sessionStartDate = nil
-        self.sessionEndDate = nil
-        presentationHandler?(false)
-        sessionStateHandler?(false, nil, nil)
-        NSSound.beep()
+        finish(completed: true, shouldBeep: true)
     }
 
     private func stopTicker() {
         timer?.invalidate()
         timer = nil
+    }
+
+    private func finish(completed: Bool, shouldBeep: Bool) {
+        guard isRunning, let startDate = sessionStartDate else {
+            stopTicker()
+            return
+        }
+        let endDate = Date()
+        let preset = selectedPreset
+        let planned = plannedDurationMinutes
+        stopTicker()
+        isRunning = false
+        sessionStartDate = nil
+        sessionEndDate = nil
+        plannedDurationMinutes = nil
+        displaySeconds = preset.durationMinutes.map { $0 * 60 } ?? 0
+        presentationHandler?(false)
+        lifecycleHandler?(
+            .ended(
+                startDate: startDate,
+                endDate: endDate,
+                preset: preset,
+                plannedDurationMinutes: planned,
+                completed: completed
+            )
+        )
+        if shouldBeep {
+            NSSound.beep()
+        }
     }
 }

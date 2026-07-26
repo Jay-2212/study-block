@@ -22,12 +22,16 @@ final class OnboardingModel {
 
     func discoverChromeDomains() {
         isDiscoveringChrome = true
-        defer { isDiscoveringChrome = false }
-        do {
-            discoveredDomains = try chromeDiscovery.discoverDomains()
-            statusMessage = "Choose the Chrome domains you use for focused work."
-        } catch {
-            statusMessage = error.localizedDescription
+        chromeDiscovery.discoverDomains { [weak self] result in
+            guard let self else { return }
+            self.isDiscoveringChrome = false
+            switch result {
+            case .success(let domains):
+                self.discoveredDomains = domains
+                self.statusMessage = "Choose the Chrome domains you use for focused work."
+            case .failure(let error):
+                self.statusMessage = error.localizedDescription
+            }
         }
     }
 

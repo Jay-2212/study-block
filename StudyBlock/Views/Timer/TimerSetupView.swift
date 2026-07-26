@@ -39,7 +39,7 @@ struct TimerSetupView: View {
             if !appModel.timer.isRunning {
                 Picker("Session length", selection: presetBinding) {
                     ForEach(SessionPreset.allCases) { preset in
-                        Text(preset.title).tag(preset)
+                        Text(appModel.presetTitle(preset)).tag(preset)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -60,8 +60,8 @@ struct TimerSetupView: View {
                         appModel.timer.togglePanelVisibility()
                     }
                 } else {
-                    Button("Start \(appModel.timer.selectedPreset.title) Session") {
-                        appModel.timer.start()
+                    Button("Start \(appModel.presetTitle(appModel.timer.selectedPreset)) Session") {
+                        appModel.startSession()
                     }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)

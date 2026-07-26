@@ -33,5 +33,47 @@ final class SettingsStoreTests: XCTestCase {
         let settings = try JSONDecoder().decode(AppSettings.self, from: data)
         XCTAssertFalse(settings.strictModeEnabled)
         XCTAssertFalse(settings.doNotDisturbEnabled)
+        XCTAssertEqual(
+            settings.sessionPresetMinutes,
+            AppSettings.defaultSessionPresetMinutes
+        )
+        XCTAssertFalse(settings.launchAtLoginEnabled)
+    }
+
+    func testAllowlistWinsAndPermanentDomainsAreNeverBlocked() {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let fileURL = directory.appendingPathComponent("settings.json")
+        let store = SettingsStore(fileURL: fileURL)
+        var settings = AppSettings.empty
+        settings.whitelistedDomains = ["notion.so"]
+        settings.blacklistedDomains = [
+            "notion.so",
+            "google.com",
+            "youtube.com"
+        ]
+
+        store.save(settings)
+
+        XCTAssertEqual(store.settings.whitelistedDomains, ["notion.so"])
+        XCTAssertEqual(store.settings.blacklistedDomains, ["youtube.com"])
+        try? FileManager.default.removeItem(at: directory)
+    }
+
+    func testCorruptedSettingsRecoverWithDefaults() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let fileURL = directory.appendingPathComponent("settings.json")
+        try FileManager.default.createDirectory(
+            at: directory,
+            withIntermediateDirectories: true
+        )
+        try Data("not-json".utf8).write(to: fileURL)
+
+        let store = SettingsStore(fileURL: fileURL)
+
+        XCTAssertEqual(store.settings, .empty)
+        XCTAssertNotNil(store.errorMessage)
+        try? FileManager.default.removeItem(at: directory)
     }
 }

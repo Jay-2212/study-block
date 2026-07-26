@@ -18,9 +18,19 @@ enum ChromeDiscoveryError: LocalizedError {
     }
 }
 
-@MainActor
 struct ChromeTabDiscoveryService {
-    func discoverDomains() throws -> [String] {
+    func discoverDomains(
+        completion: @escaping (Result<[String], Error>) -> Void
+    ) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            let result = Result { try Self.discoverDomainsSynchronously() }
+            DispatchQueue.main.async {
+                completion(result)
+            }
+        }
+    }
+
+    private static func discoverDomainsSynchronously() throws -> [String] {
         let chromeRunning = NSWorkspace.shared.runningApplications.contains {
             $0.bundleIdentifier == "com.google.Chrome"
         }

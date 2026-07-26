@@ -21,8 +21,8 @@ struct MenuBarContentView: View {
         } else if appModel.settingsStore.settings.hasCompletedOnboarding {
             Menu("Start Session") {
                 ForEach(SessionPreset.allCases) { preset in
-                    Button(preset.title) {
-                        appModel.timer.start(preset: preset)
+                    Button(appModel.presetTitle(preset)) {
+                        appModel.startSession(preset)
                     }
                 }
             }
