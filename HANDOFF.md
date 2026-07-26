@@ -22,10 +22,13 @@ HTTPS.
 
 ## Verification
 
-- Local geometry checks at 1280, 720, and 390 px found zero feature-card
-  overlap and zero horizontal overflow.
-- Reduced-motion emulation left all cards fully visible, untransformed, and
-  collision-free.
+- Local geometry checks at 1280, 720, and 390 px, plus live checks at 1280 and
+  390 px, found zero feature-card overlap and zero horizontal overflow.
+- Local and live reduced-motion emulation left all cards fully visible,
+  untransformed, and collision-free.
+- GitHub Pages built fix commit `a0c4e04`. Cloudflare confirmed the unproxied
+  GitHub Pages CNAME and successfully rendered the live Nudge paragraph and
+  ladder over HTTPS; direct browser inspection showed 32 px separation.
 - HTML validation and JavaScript syntax checks passed.
 - All smoke checks passed, and `./script/build_and_run.sh --verify` built and
   launched the app through the Command Line Tools fallback.
