@@ -1,0 +1,27 @@
+# Xcode
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/
+*.xccheckout
+*.moved-aside
+*.xcscmblueprint
+
+# Swift Package Manager (tooling or future packages)
+.build/
+.swiftpm/
+
+# macOS
+.DS_Store
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.local
+
+# Generated app artifacts
+dist/
+*.dSYM
+*.dSYM.zip
+*.app.zip
