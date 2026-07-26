@@ -2,47 +2,50 @@
 
 ## Current state
 
-Study Block 1.0.2 is implemented, installed, and published as GitHub release
-[`v1.0.2`](https://github.com/Jay-2212/study-block/releases/tag/v1.0.2).
-The installed copy at `/Applications/Study Block.app` is the same release
-binary packaged in `dist/Study-Block-1.0.2.dmg`.
+Study Block 1.0.2 is implemented, installed, and published from the public
+[`Jay-2212/study-block`](https://github.com/Jay-2212/study-block) repository.
+The release now exposes one stable asset, `StudyBlock.dmg`, so the permanent
+latest-release URL remains valid across future versions.
 
-The release adds cached website favicons with globe fallbacks, native app icons
-throughout onboarding and settings, a visible ready-screen Settings button,
-the standard Command-Comma Settings command, and deterministic ownership of
-session-created Do Not Disturb across live settings reconfiguration.
+The static product site is live at
+[`studyblock.jaybharti.me`](https://studyblock.jaybharti.me). GitHub Pages
+publishes `docs/` from `main`; Cloudflare has an unproxied CNAME from
+`studyblock.jaybharti.me` to `jay-2212.github.io`, and GitHub Pages enforces
+HTTPS.
+
+## Last session
+
+- Installed and applied the `frontend-design` skill.
+- Built the responsive product site with accessible semantic HTML, a deliberate
+  type and color system, native-style product mockups, reduced-motion support,
+  metadata, favicons, and hand-rolled reveal animations.
+- Added the permanent latest-release download URL and client-side GitHub release
+  version display with a graceful fallback.
+- Changed release packaging to produce `dist/StudyBlock.dmg`, uploaded the
+  stable 1.0.2 asset, verified it, and removed the obsolete versioned asset.
+- Made the repository public, enabled GitHub Pages, configured the custom domain,
+  created and verified the DNS-only Cloudflare CNAME, and enabled HTTPS.
 
 ## Verification
 
-- All domain, policy, escalation, settings, and history smoke checks passed.
-- `./script/build_and_run.sh --release --verify` built and launched version
-  1.0.2 through the Command Line Tools fallback.
-- The release bundle passed strict `codesign` verification.
-- Live UI checks confirmed resolved favicons, an unavailable-site globe
-  fallback, native icons for blocked and allowed apps, both Settings entry
-  points, persistent edits, and live mid-session reapplication.
-- The installed candidate successfully enabled session-owned Do Not Disturb.
-  Stop, expiry, normal quit, and sleep all converge on the same idempotent
-  release path; Focus-state verification now reports the resulting state.
-- The DMG passed `hdiutil verify`, contains the matching 1.0.2 app and an
-  Applications symlink, and has SHA-256
-  `bff5a0509ba2b0c6e77e8651f8857d3cc7bac7322bc51854b1b45b5022f5bd43`.
-- The published asset was downloaded again, matched the local DMG byte for
-  byte, passed `hdiutil verify`, and the `v1.0.2` tag resolves to release commit
-  `c407b31`.
-
-## Distribution caveat
-
-The app remains ad-hoc signed and is not notarized because this Mac has no
-Developer ID Application identity or full Xcode installation. Replacing an
-ad-hoc build can require refreshing its Accessibility entry because macOS ties
-the permission to the binary hash.
+- HTML validation and JavaScript syntax checks passed.
+- Desktop and 390 px responsive checks found no horizontal overflow.
+- Live HTTPS rendered `v1.0.2` from the unauthenticated GitHub API with no
+  browser console warnings.
+- The GitHub repository returned HTTP 200 without authentication.
+- The permanent latest-release URL downloaded `StudyBlock.dmg`; its SHA-256 is
+  `1b1590b6ede9a5a12883876a585961750d76ac62335445dcd3dd4ee8ab102b7e`,
+  matching the uploaded file, and `hdiutil verify` passed.
+- GitHub Pages reports the site built, its certificate approved, and HTTPS
+  enforcement enabled. HTTP redirects to HTTPS and the live HTTPS page returns
+  200.
+- All smoke checks passed, and `./script/build_and_run.sh --verify` built and
+  launched the app through the Command Line Tools fallback.
 
 ## Next steps
 
-No product work is pending. A future trusted distribution still requires
-Developer ID signing, hardened-runtime validation, notarization, stapling, and
-a clean-machine Gatekeeper test.
+Trusted app distribution still requires Developer ID signing, hardened-runtime
+validation, notarization, stapling, and a clean-machine Gatekeeper test.
 
 ## Open questions
 
