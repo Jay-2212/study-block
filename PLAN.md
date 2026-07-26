@@ -86,3 +86,19 @@ identity, so those credentialed release operations were not fabricated.
 
 The optional Chrome extension/native-messaging upgrade remains intentionally out
 of scope; AppleScript enforcement is the shipped core implementation.
+
+## Approved website release
+
+> Status: **Approved on 2026-07-26.** The implementation brief was supplied
+> directly by the product owner.
+
+- Publish a static product site from `docs/` through GitHub Pages.
+- Use an intentional dark, focus-oriented visual system derived from the app
+  icon and native macOS interface.
+- Cover the shipped blocking, nudge ladder, floating timer, and local streak
+  features with accurate product copy.
+- Link the primary download to a stable `StudyBlock.dmg` latest-release asset
+  and display the current GitHub release version client-side.
+- Configure `studyblock.jaybharti.me`, DNS-only Cloudflare CNAME, and GitHub
+  Pages HTTPS.
+- Verify the site, stable download, rendered version, and GitHub link live.

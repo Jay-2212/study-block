@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="glow" cx="78%" cy="18%" r="70%">
+      <stop stop-color="#39459b" stop-opacity=".58"/>
+      <stop offset=".55" stop-color="#121a31" stop-opacity=".2"/>
+      <stop offset="1" stop-color="#090d1a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="icon" x1="25" y1="25" x2="215" y2="215" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4640bd"/>
+      <stop offset=".45" stop-color="#186fe8"/>
+      <stop offset="1" stop-color="#11184d"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#090d1a"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <g opacity=".08" stroke="#c5ccff">
+    <path d="M0 90h1200M0 180h1200M0 270h1200M0 360h1200M0 450h1200M0 540h1200"/>
+    <path d="M90 0v630M180 0v630M270 0v630M360 0v630M450 0v630M540 0v630M630 0v630M720 0v630M810 0v630M900 0v630M990 0v630M1080 0v630M1170 0v630"/>
+  </g>
+  <g transform="translate(760 128)">
+    <rect width="260" height="260" rx="62" fill="url(#icon)"/>
+    <path d="M130 44v42M77 65a72 72 0 1 0 106 0M55 178c32-2 57 6 75 26 18-20 43-28 75-26" fill="none" stroke="#fffdf5" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="92" y="226" fill="#b9bbff" font-family="Manrope, Helvetica, sans-serif" font-size="22" font-weight="700" letter-spacing="4">NATIVE FOCUS FOR MACOS</text>
+  <text x="86" y="332" fill="#f5f6ff" font-family="Georgia, serif" font-size="92" font-weight="500" letter-spacing="-4">Make room</text>
+  <text x="86" y="420" fill="#b9bbff" font-family="Georgia, serif" font-size="92" font-style="italic" font-weight="500" letter-spacing="-4">for focus.</text>
+  <text x="92" y="495" fill="#a7aec6" font-family="Manrope, Helvetica, sans-serif" font-size="24">Study Block · free and open source</text>
+</svg>

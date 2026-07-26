@@ -2,11 +2,9 @@
 set -euo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-INFO_PLIST="$PROJECT_ROOT/StudyBlock/Resources/Info.plist"
 APP_NAME="Study Block"
-VERSION="$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$INFO_PLIST")"
 APP_BUNDLE="$PROJECT_ROOT/.build/Release/$APP_NAME.app"
-OUTPUT_DMG="$PROJECT_ROOT/dist/Study-Block-$VERSION.dmg"
+OUTPUT_DMG="$PROJECT_ROOT/dist/StudyBlock.dmg"
 STAGING_DIR="$(mktemp -d "${TMPDIR:-/tmp}/study-block-release.XXXXXX")"
 SKIP_BUILD=false
 

@@ -34,7 +34,7 @@ before the session.
 Download the current DMG from the
 [latest GitHub release](https://github.com/Jay-2212/study-block/releases/latest).
 
-1. Open `Study-Block.dmg`.
+1. Open `StudyBlock.dmg`.
 2. Drag **Study Block** to **Applications**.
 3. Because this build is unsigned and not notarized, Control-click or
    right-click the app in Applications, choose **Open**, then confirm **Open**.
