@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.4 — 2026-07-28
+
+- Fixed a shutdown deadlock by restoring redirected Chrome tabs on the
+  enforcement worker with a bounded quit-time wait.
+
 ## 1.0.3 — 2026-07-28
 
 - Fixed the development build launcher so it only quits Study Block copies

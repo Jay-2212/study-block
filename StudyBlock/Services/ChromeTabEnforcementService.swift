@@ -33,6 +33,8 @@ final class ChromeTabEnforcementService: WebEnforcementProvider {
 
 private extension ChromeTabEnforcementService {
     final class Worker: @unchecked Sendable {
+        private static let stopWaitTimeout: DispatchTimeInterval = .seconds(5)
+
         private struct ChromeTab {
             let windowIndex: Int
             let tabIndex: Int
@@ -49,6 +51,7 @@ private extension ChromeTabEnforcementService {
             label: "com.jay.studyblock.chrome",
             qos: .utility
         )
+        private let queueKey = DispatchSpecificKey<Void>()
         private let blockPage = BlockPageService()
         private var workItem: DispatchWorkItem?
         private var generation = UUID()
@@ -59,6 +62,10 @@ private extension ChromeTabEnforcementService {
         private var reportedChromeUnavailable = false
         private var onRedirect: ((String) -> Void)?
         private var onStatus: ((String) -> Void)?
+
+        init() {
+            queue.setSpecific(key: queueKey, value: ())
+        }
 
         func start(
             policy: WebEnforcementPolicy,
@@ -86,15 +93,27 @@ private extension ChromeTabEnforcementService {
         }
 
         func stopAndRestore() {
-            queue.sync {
-                generation = UUID()
-                workItem?.cancel()
-                workItem = nil
-                restoreRedirectedTabs()
-                redirectedTabs.removeAll()
-                onRedirect = nil
-                onStatus = nil
+            if DispatchQueue.getSpecific(key: queueKey) != nil {
+                performStopAndRestore()
+                return
             }
+
+            let completion = DispatchSemaphore(value: 0)
+            queue.async { [self] in
+                performStopAndRestore()
+                completion.signal()
+            }
+            _ = completion.wait(timeout: .now() + Self.stopWaitTimeout)
+        }
+
+        private func performStopAndRestore() {
+            generation = UUID()
+            workItem?.cancel()
+            workItem = nil
+            restoreRedirectedTabs()
+            redirectedTabs.removeAll()
+            onRedirect = nil
+            onStatus = nil
         }
 
         private func schedule(after delay: TimeInterval, generation: UUID) {
