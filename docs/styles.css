@@ -891,6 +891,20 @@ h1 span {
   font-size: 0.68rem;
 }
 
+.download-actions .release-checksum {
+  max-width: 19rem;
+  text-align: center;
+}
+
+.release-checksum code {
+  display: block;
+  margin-top: 0.3rem;
+  color: var(--muted);
+  font-size: 0.67rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
 .install-note {
   max-width: 54rem;
   margin: var(--space-4) auto 0;

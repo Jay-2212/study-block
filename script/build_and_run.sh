@@ -28,7 +28,65 @@ LOCAL_BUILD_DIR="$PROJECT_ROOT/.build"
 DERIVED_DATA_DIR="$LOCAL_BUILD_DIR/DerivedData"
 FALLBACK_APP="$LOCAL_BUILD_DIR/$CONFIGURATION/$APP_NAME.app"
 
-pkill -x "$APP_NAME" >/dev/null 2>&1 || true
+running_dev_pids() {
+  /usr/bin/osascript -l JavaScript - "$BUNDLE_ID" "$LOCAL_BUILD_DIR" <<'JXA'
+ObjC.import("AppKit");
+
+function run(arguments) {
+  const bundleIdentifier = arguments[0];
+  const buildRoot = arguments[1].replace(/\/+$/, "");
+  return $.NSRunningApplication
+    .runningApplicationsWithBundleIdentifier(bundleIdentifier)
+    .js
+    .filter((application) => {
+      const bundleURL = application.bundleURL;
+      return bundleURL && bundleURL.path.js.startsWith(`${buildRoot}/`);
+    })
+    .map((application) => application.processIdentifier)
+    .join("\n");
+}
+JXA
+}
+
+stop_running_dev_instances() {
+  local pids
+  pids="$(running_dev_pids)"
+  [[ -z "$pids" ]] && return
+
+  /usr/bin/osascript -l JavaScript - "$BUNDLE_ID" "$LOCAL_BUILD_DIR" <<'JXA'
+ObjC.import("AppKit");
+
+function run(arguments) {
+  const bundleIdentifier = arguments[0];
+  const buildRoot = arguments[1].replace(/\/+$/, "");
+  const applications = $.NSRunningApplication
+    .runningApplicationsWithBundleIdentifier(bundleIdentifier)
+    .js
+    .filter((application) => {
+      const bundleURL = application.bundleURL;
+      return bundleURL && bundleURL.path.js.startsWith(`${buildRoot}/`);
+    });
+
+  for (const application of applications) {
+    if (!application.terminate) {
+      throw new Error(
+        `Study Block dev process ${application.processIdentifier} refused to quit.`,
+      );
+    }
+  }
+}
+JXA
+
+  for _ in {1..20}; do
+    [[ -z "$(running_dev_pids)" ]] && return
+    sleep 0.25
+  done
+
+  echo "A Study Block dev instance did not quit cleanly; refusing to force-kill it." >&2
+  exit 1
+}
+
+stop_running_dev_instances
 
 resolve_xcode_developer_dir() {
   if xcodebuild -version >/dev/null 2>&1; then
@@ -110,7 +168,19 @@ else
 fi
 
 open_app() {
-  /usr/bin/open -n "$APP_BUNDLE"
+  /usr/bin/open "$APP_BUNDLE"
+}
+
+verify_dev_instance() {
+  for _ in {1..20}; do
+    if [[ -n "$(running_dev_pids)" ]]; then
+      echo "$APP_NAME launched successfully from $APP_BUNDLE."
+      return
+    fi
+    sleep 0.25
+  done
+  echo "$APP_NAME did not launch from $APP_BUNDLE." >&2
+  exit 1
 }
 
 case "$MODE" in
@@ -130,15 +200,7 @@ case "$MODE" in
     ;;
   --verify|verify)
     open_app
-    for _ in {1..20}; do
-      if pgrep -x "$APP_NAME" >/dev/null; then
-        echo "$APP_NAME launched successfully."
-        exit 0
-      fi
-      sleep 0.25
-    done
-    echo "$APP_NAME did not launch." >&2
-    exit 1
+    verify_dev_instance
     ;;
   *)
     echo "usage: $0 [run|--debug|--logs|--telemetry|--verify] [--release]" >&2

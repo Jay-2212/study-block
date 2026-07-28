@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.3 — 2026-07-28
+
+- Fixed the development build launcher so it only quits Study Block copies
+  launched from this repository and never terminates the installed login item.
+- Removed forced duplicate-instance launches and made launch verification check
+  the exact development app bundle.
+- Refreshes an enabled launch-at-login registration from the current installed
+  app bundle after an app replacement, while preventing development builds from
+  taking over the registration.
+
 ## 1.0.2 — 2026-07-26
 
 - Added asynchronously fetched, disk-cached website favicons with a globe

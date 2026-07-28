@@ -35,6 +35,7 @@ final class AppModel {
         onboarding = OnboardingModel(settingsStore: settingsStore)
         appEscalation = AppEscalationCoordinator()
         doNotDisturb = DoNotDisturbService()
+        launchAtLogin.refreshRegistrationIfNeeded()
 
         timerPanelController = FloatingTimerPanelController(timer: timer)
         nudgePanelController = NudgePanelController(coordinator: appEscalation)
