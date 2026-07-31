@@ -6,8 +6,10 @@ struct AppNudgeView: View {
     var body: some View {
         VStack(spacing: 20) {
             Image(systemName: iconName)
-                .font(.system(size: 34, weight: .medium))
-                .foregroundStyle(.tint)
+                .font(.system(size: 30, weight: .medium))
+                .foregroundStyle(.white)
+                .frame(width: 60, height: 60)
+                .background(iconTint, in: Circle())
 
             VStack(spacing: 7) {
                 Text(title)
@@ -23,6 +25,8 @@ struct AppNudgeView: View {
         .frame(width: 410)
         .fixedSize(horizontal: false, vertical: true)
         .background(.regularMaterial)
+        .accessibilityElement(children: .contain)
+        .accessibilityAddTraits(.isModal)
     }
 
     @ViewBuilder
@@ -42,7 +46,7 @@ struct AppNudgeView: View {
                 Button("Close") {
                     coordinator.closeFailure()
                 }
-                .keyboardShortcut(.defaultAction)
+                .keyboardShortcut(.cancelAction)
             }
         default:
             EmptyView()
@@ -61,6 +65,7 @@ struct AppNudgeView: View {
                     Button("Give Me 5 Min") {
                         coordinator.snoozeCurrent()
                     }
+                    .keyboardShortcut(.cancelAction)
                 }
             }
 
@@ -69,6 +74,7 @@ struct AppNudgeView: View {
                     .textFieldStyle(.roundedBorder)
                     .frame(width: 100)
                     .onSubmit { coordinator.beginAllowance() }
+                    .accessibilityLabel("Allowance minutes")
                 Button("Start Timer") {
                     coordinator.beginAllowance()
                 }
@@ -93,12 +99,15 @@ struct AppNudgeView: View {
 
     private var warningActions: some View {
         VStack(spacing: 12) {
-            Text("\(coordinator.warningRemainingSeconds)s")
-                .font(.system(size: 46, weight: .semibold, design: .rounded))
-                .monospacedDigit()
+            BigNumberDisplay(
+                value: "\(coordinator.warningRemainingSeconds)s",
+                size: .compact,
+                urgent: true
+            )
             Button("Keep App Open") {
                 coordinator.bypassWarning()
             }
+            .keyboardShortcut(.cancelAction)
         }
     }
 
@@ -126,15 +135,20 @@ struct AppNudgeView: View {
     }
 
     private var iconName: String {
-        coordinator.currentState?.stage.isWarning == true
-            ? "exclamationmark.triangle"
-            : "moon.stars"
+        switch coordinator.currentState?.stage {
+        case .warning, .quitFailed:
+            "exclamationmark.triangle.fill"
+        default:
+            "moon.stars.fill"
+        }
     }
-}
 
-private extension AppEscalationStage {
-    var isWarning: Bool {
-        if case .warning = self { return true }
-        return false
+    private var iconTint: Color {
+        switch coordinator.currentState?.stage {
+        case .warning, .quitFailed:
+            .orange
+        default:
+            .accentColor
+        }
     }
 }

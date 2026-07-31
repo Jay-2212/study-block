@@ -10,14 +10,17 @@ struct OnboardingFlowView: View {
 
             Group {
                 switch model.step {
-                case 0:
+                case .permissionPriming:
+                    PermissionPrimingStepView(model: model)
+                case .studyDomains:
                     StudyDomainsStepView(model: model)
-                case 1:
+                case .whitelist:
                     WhitelistStepView(model: model)
-                default:
+                case .blacklist:
                     BlacklistStepView(model: model)
                 }
             }
+            .frame(maxWidth: 620)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             Divider()
@@ -31,20 +34,18 @@ struct OnboardingFlowView: View {
             Label("Study Block", systemImage: "shield.lefthalf.filled")
                 .font(.headline)
             Spacer()
-            Text("Step \(model.step + 1) of 3")
-                .foregroundStyle(.secondary)
-            ProgressView(value: Double(model.step + 1), total: 3)
-                .frame(width: 120)
+            OnboardingStepIndicator(currentStep: model.step)
         }
         .padding(20)
     }
 
     private var footer: some View {
         HStack {
-            if model.step > 0 {
+            if model.step.previous != nil {
                 Button("Back") {
-                    model.step -= 1
+                    model.goBack()
                 }
+                .controlSize(.large)
             }
 
             if let message = model.statusMessage {
@@ -56,17 +57,20 @@ struct OnboardingFlowView: View {
 
             Spacer()
 
-            if model.step < 2 {
+            if model.step.next != nil {
                 Button("Continue") {
-                    model.statusMessage = nil
-                    model.step += 1
+                    model.advance()
                 }
                 .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .keyboardShortcut(.defaultAction)
             } else {
                 Button("Finish") {
                     model.complete()
                 }
                 .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .keyboardShortcut(.defaultAction)
                 .disabled(model.draft.whitelistedDomains.isEmpty)
                 .help("Choose at least one allowed domain before finishing.")
             }

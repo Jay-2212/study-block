@@ -13,9 +13,7 @@ struct FloatingTimerView: View {
                 Text("Focus")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                Text(timer.formattedTime)
-                    .font(.title2.weight(.semibold))
-                    .monospacedDigit()
+                BigNumberDisplay(value: timer.formattedTime, size: .compact)
             }
         }
         .padding(.horizontal, 18)

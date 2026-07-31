@@ -1,10 +1,22 @@
 import Foundation
 import Observation
 
+enum OnboardingStep: Int, CaseIterable, Identifiable {
+    case permissionPriming
+    case studyDomains
+    case whitelist
+    case blacklist
+
+    var id: Int { rawValue }
+
+    var next: OnboardingStep? { OnboardingStep(rawValue: rawValue + 1) }
+    var previous: OnboardingStep? { OnboardingStep(rawValue: rawValue - 1) }
+}
+
 @MainActor
 @Observable
 final class OnboardingModel {
-    var step = 0
+    var step: OnboardingStep = .permissionPriming
     var draft: OnboardingDraft
     var discoveredDomains: [String] = []
     var manualWhitelistEntry = ""
@@ -12,12 +24,44 @@ final class OnboardingModel {
     var statusMessage: String?
     var isDiscoveringChrome = false
 
+    /// Set by `AppModel` so notification authorization is requested exactly
+    /// once, right after the priming step's explanation — never on appear.
+    var onRequestNotificationPermission: (() -> Void)?
+
     private let settingsStore: SettingsStore
     private let chromeDiscovery = ChromeTabDiscoveryService()
 
     init(settingsStore: SettingsStore) {
         self.settingsStore = settingsStore
         draft = OnboardingDraft(settings: settingsStore.settings)
+    }
+
+    /// Resets the flow to a fresh first step. Needed because the model is
+    /// constructed once in `AppModel.init` and would otherwise reopen at
+    /// whatever step it was last on when the user chooses "Run Onboarding
+    /// Again" from Settings.
+    func restart() {
+        step = .permissionPriming
+        draft = OnboardingDraft(settings: settingsStore.settings)
+        discoveredDomains = []
+        manualWhitelistEntry = ""
+        manualBlacklistEntry = ""
+        statusMessage = nil
+        isDiscoveringChrome = false
+    }
+
+    func advance() {
+        if step == .permissionPriming {
+            onRequestNotificationPermission?()
+        }
+        guard let next = step.next else { return }
+        statusMessage = nil
+        step = next
+    }
+
+    func goBack() {
+        guard let previous = step.previous else { return }
+        step = previous
     }
 
     func discoverChromeDomains() {

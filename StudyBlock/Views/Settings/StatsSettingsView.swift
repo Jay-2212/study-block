@@ -29,12 +29,10 @@ struct StatsSettingsView: View {
                     .font(.headline)
 
                 if appModel.sessionHistory.sessions.isEmpty {
-                    ContentUnavailableView(
-                        "No completed sessions yet",
+                    StudyEmptyState(
+                        title: "No completed sessions yet",
                         systemImage: "timer",
-                        description: Text(
-                            "Finish a timed session or stop an open-ended session to begin your history."
-                        )
+                        description: "Finish a timed session or stop an open-ended session to begin your history."
                     )
                     .frame(maxWidth: .infinity, minHeight: 220)
                 } else {
@@ -85,7 +83,7 @@ struct StatsSettingsView: View {
             }
         }
         .padding(.horizontal, 14)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .studySurface(cornerRadius: 12)
     }
 
     private func sessionTitle(_ session: StudySessionRecord) -> String {
@@ -120,6 +118,6 @@ private struct StatCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .studySurface(cornerRadius: 12)
     }
 }

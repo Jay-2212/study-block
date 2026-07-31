@@ -28,8 +28,7 @@ struct BlacklistStepView: View {
                 .foregroundStyle(.secondary)
             }
             .padding(32)
-            .frame(maxWidth: 780, alignment: .leading)
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
@@ -79,8 +78,12 @@ struct BlacklistStepView: View {
             }
 
             if model.draft.blacklistedApps.isEmpty {
-                Text("No apps selected. You can add these later in Settings.")
-                    .foregroundStyle(.secondary)
+                StudyEmptyState(
+                    title: "No apps selected",
+                    systemImage: "app.dashed",
+                    description: "You can add these later in Settings.",
+                    compact: true
+                )
             } else {
                 LazyVGrid(columns: columns, alignment: .leading, spacing: 10) {
                     ForEach(model.draft.blacklistedApps.sorted { $0.name < $1.name }) { app in

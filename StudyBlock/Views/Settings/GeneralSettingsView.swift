@@ -20,6 +20,7 @@ struct GeneralSettingsView: View {
                 Text("Review the original guided setup at any time.")
                     .foregroundStyle(.secondary)
                 Button("Run Onboarding Again") {
+                    appModel.onboarding.restart()
                     appModel.settingsStore.resetOnboarding()
                     NSApp.activate(ignoringOtherApps: true)
                     openWindow(id: "main")

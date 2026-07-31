@@ -6,6 +6,12 @@ import Observation
 final class SettingsStore {
     private(set) var settings: AppSettings
     private(set) var errorMessage: String?
+    /// A one-shot counterpart to `errorMessage` for alert presentation.
+    /// `errorMessage` persists as a passive supplement (shown inline in
+    /// Settings) until the next successful save; this instead clears the
+    /// moment the user acknowledges the alert, and re-arms on every new
+    /// failure even if the message text repeats.
+    private(set) var pendingErrorAlert: String?
     var changeHandler: ((AppSettings) -> Void)?
 
     private let fileURL: URL
@@ -35,10 +41,17 @@ final class SettingsStore {
             }
             settings = sanitized
             errorMessage = nil
+            pendingErrorAlert = nil
             changeHandler?(sanitized)
         } catch {
-            errorMessage = "Could not save settings: \(error.localizedDescription)"
+            let message = "Could not save settings: \(error.localizedDescription)"
+            errorMessage = message
+            pendingErrorAlert = message
         }
+    }
+
+    func acknowledgeErrorAlert() {
+        pendingErrorAlert = nil
     }
 
     func resetOnboarding() {
@@ -79,7 +92,9 @@ final class SettingsStore {
             settings = Self.sanitize(loaded ?? .empty)
         } catch {
             settings = .empty
-            errorMessage = "Settings were unreadable, so safe defaults were restored."
+            let message = "Settings were unreadable, so safe defaults were restored."
+            errorMessage = message
+            pendingErrorAlert = message
         }
     }
 

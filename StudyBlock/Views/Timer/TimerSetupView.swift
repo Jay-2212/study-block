@@ -14,14 +14,13 @@ struct TimerSetupView: View {
             VStack(spacing: 8) {
                 Text(appModel.timer.isRunning ? "Focus session" : "You're ready to focus")
                     .font(.largeTitle.bold())
-                Text(
-                    appModel.timer.isRunning
-                        ? appModel.timer.formattedTime
-                        : "Choose how long you want to focus"
-                )
-                .font(appModel.timer.isRunning ? .system(size: 64, weight: .semibold, design: .rounded) : .title2)
-                .monospacedDigit()
-                .foregroundStyle(appModel.timer.isRunning ? .primary : .secondary)
+                if appModel.timer.isRunning {
+                    BigNumberDisplay(value: appModel.timer.formattedTime, size: .large)
+                } else {
+                    Text("Choose how long you want to focus")
+                        .font(.title2)
+                        .foregroundStyle(.secondary)
+                }
 
                 if appModel.timer.isRunning {
                     Text(appModel.timer.isOpenEnded ? "elapsed" : "remaining")
@@ -79,6 +78,10 @@ struct TimerSetupView: View {
                 sessionModeStatus
             } else {
                 VStack(spacing: 8) {
+                    if let message = appModel.lastCompletionMessage {
+                        Label(message, systemImage: "checkmark.circle")
+                            .foregroundStyle(.green)
+                    }
                     Text("Blocked Chrome tabs and distracting apps are watched only while a session runs.")
                     if let message = appModel.doNotDisturb.statusMessage {
                         Label(message, systemImage: "moon")
@@ -86,6 +89,8 @@ struct TimerSetupView: View {
                 }
                 .font(.callout)
                 .foregroundStyle(.secondary)
+
+                notificationPrimingRow
             }
 
             Spacer()
@@ -116,6 +121,24 @@ struct TimerSetupView: View {
             Label("Chrome and distracting apps are being watched", systemImage: "shield")
                 .font(.callout)
                 .foregroundStyle(.secondary)
+        }
+    }
+
+    @ViewBuilder
+    private var notificationPrimingRow: some View {
+        if appModel.notifications.authorizationStatus == .notDetermined {
+            HStack(spacing: 8) {
+                Label(
+                    "Get notified when a session ends",
+                    systemImage: "bell"
+                )
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                Button("Enable") {
+                    appModel.notifications.requestAuthorization()
+                }
+                .font(.callout)
+            }
         }
     }
 

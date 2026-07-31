@@ -10,10 +10,12 @@ final class AppModel {
     let onboarding: OnboardingModel
     let appEscalation: AppEscalationCoordinator
     let doNotDisturb: DoNotDisturbService
+    let notifications = NotificationService()
     let listIcons = ListIconStore()
     let launchAtLogin = LaunchAtLoginService()
     private(set) var lastBlockedDomain: String?
     private(set) var enforcementMessage: String?
+    private(set) var lastCompletionMessage: String?
 
     @ObservationIgnored private var timerPanelController: FloatingTimerPanelController!
     @ObservationIgnored private var nudgePanelController: NudgePanelController!
@@ -36,6 +38,9 @@ final class AppModel {
         appEscalation = AppEscalationCoordinator()
         doNotDisturb = DoNotDisturbService()
         launchAtLogin.refreshRegistrationIfNeeded()
+        onboarding.onRequestNotificationPermission = { [weak notifications] in
+            notifications?.requestAuthorization()
+        }
 
         timerPanelController = FloatingTimerPanelController(timer: timer)
         nudgePanelController = NudgePanelController(coordinator: appEscalation)
@@ -81,6 +86,7 @@ final class AppModel {
                     )
                 )
                 self.activeStrictMode = self.settingsStore.settings.strictModeEnabled
+                self.lastCompletionMessage = nil
                 self.startSessionResources(
                     startDate: startDate,
                     endDate: endDate
@@ -104,6 +110,12 @@ final class AppModel {
                             strictModeEnabled: self.activeStrictMode
                         )
                     )
+                    let message = Self.completionMessage(
+                        startDate: startDate,
+                        endDate: endDate
+                    )
+                    self.lastCompletionMessage = message
+                    self.notifications.notifySessionCompleted(body: message)
                 }
             }
         }
@@ -134,6 +146,16 @@ final class AppModel {
 
     func presetTitle(_ preset: SessionPreset) -> String {
         configuredDuration(for: preset).map { "\($0) min" } ?? "Open-ended"
+    }
+
+    private static func completionMessage(startDate: Date, endDate: Date) -> String {
+        let minutes = max(1, Int(endDate.timeIntervalSince(startDate) / 60))
+        let hours = minutes / 60
+        let remainder = minutes % 60
+        let duration = hours > 0
+            ? (remainder > 0 ? "\(hours)h \(remainder)m" : "\(hours)h")
+            : "\(minutes)m"
+        return "You focused for \(duration). Nice work."
     }
 
     func setLaunchAtLogin(_ enabled: Bool) {

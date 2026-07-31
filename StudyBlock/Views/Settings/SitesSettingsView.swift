@@ -77,8 +77,11 @@ struct SitesSettingsView: View {
         remove: @escaping (AppChoice) -> Void
     ) -> some View {
         if apps.isEmpty {
-            Text("None selected")
-                .foregroundStyle(.secondary)
+            StudyEmptyState(
+                title: "None selected",
+                systemImage: "app.dashed",
+                compact: true
+            )
         } else {
             ForEach(apps.sorted { $0.name < $1.name }) { app in
                 HStack {
@@ -164,8 +167,11 @@ private struct DomainListEditor: View {
     var body: some View {
         Section {
             if domains.isEmpty {
-                Text("No sites added")
-                    .foregroundStyle(.secondary)
+                StudyEmptyState(
+                    title: "No sites added",
+                    systemImage: "globe",
+                    compact: true
+                )
             } else {
                 ForEach(domains, id: \.self) { domain in
                     HStack {

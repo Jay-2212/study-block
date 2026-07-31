@@ -24,13 +24,7 @@ struct StudyDomainsStepView: View {
                 manualSection
             }
             .padding(32)
-            .frame(maxWidth: 780, alignment: .leading)
-            .frame(maxWidth: .infinity)
-        }
-        .onAppear {
-            if model.discoveredDomains.isEmpty && model.statusMessage == nil {
-                model.discoverChromeDomains()
-            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
@@ -40,17 +34,26 @@ struct StudyDomainsStepView: View {
                 Label("Open Chrome tabs", systemImage: "network")
                     .font(.headline)
                 Spacer()
-                Button("Refresh") {
-                    model.discoverChromeDomains()
+                if !model.discoveredDomains.isEmpty {
+                    Button("Refresh") {
+                        model.discoverChromeDomains()
+                    }
+                    .disabled(model.isDiscoveringChrome)
                 }
-                .disabled(model.isDiscoveringChrome)
             }
 
             if model.isDiscoveringChrome {
                 ProgressView("Reading Chrome domains…")
+                    .frame(maxWidth: .infinity)
             } else if model.discoveredDomains.isEmpty {
-                Text("No Chrome domains available. Manual entry still works.")
-                    .foregroundStyle(.secondary)
+                StudyEmptyState(
+                    title: "Chrome tabs not read yet",
+                    systemImage: "network",
+                    description: "Study Block will ask to automate Chrome the first time. Manual entry always works too.",
+                    actionTitle: "Check Chrome Tabs",
+                    action: { model.discoverChromeDomains() },
+                    compact: true
+                )
             } else {
                 LazyVGrid(columns: columns, alignment: .leading, spacing: 10) {
                     ForEach(model.discoveredDomains, id: \.self) { domain in

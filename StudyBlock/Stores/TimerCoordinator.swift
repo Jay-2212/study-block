@@ -1,4 +1,3 @@
-import AppKit
 import Foundation
 import Observation
 
@@ -58,7 +57,7 @@ final class TimerCoordinator {
         durationMinutes: Int? = nil
     ) {
         if isRunning {
-            finish(completed: false, shouldBeep: false)
+            finish(completed: false)
         }
         stopTicker()
         let preset = preset ?? selectedPreset
@@ -112,7 +111,7 @@ final class TimerCoordinator {
 
     func stop() {
         let completed = durationSeconds == nil && displaySeconds > 0
-        finish(completed: completed, shouldBeep: false)
+        finish(completed: completed)
     }
 
     func togglePanelVisibility() {
@@ -147,7 +146,7 @@ final class TimerCoordinator {
             presentationHandler?(false)
             return
         }
-        finish(completed: false, shouldBeep: false)
+        finish(completed: false)
     }
 
     private func scheduleTicker() {
@@ -167,7 +166,7 @@ final class TimerCoordinator {
             return
         }
         guard displaySeconds == 0 else { return }
-        finish(completed: true, shouldBeep: true)
+        finish(completed: true)
     }
 
     private func stopTicker() {
@@ -175,7 +174,7 @@ final class TimerCoordinator {
         timer = nil
     }
 
-    private func finish(completed: Bool, shouldBeep: Bool) {
+    private func finish(completed: Bool) {
         guard isRunning, let startDate = sessionStartDate else {
             stopTicker()
             return
@@ -199,8 +198,5 @@ final class TimerCoordinator {
                 completed: completed
             )
         )
-        if shouldBeep {
-            NSSound.beep()
-        }
     }
 }

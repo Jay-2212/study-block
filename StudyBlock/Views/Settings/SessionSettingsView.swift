@@ -44,8 +44,47 @@ struct SessionSettingsView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+
+            Section("Session-complete notifications") {
+                notificationStatusRow
+            }
         }
         .formStyle(.grouped)
+        .onAppear {
+            appModel.notifications.refreshAuthorizationStatus()
+        }
+    }
+
+    @ViewBuilder
+    private var notificationStatusRow: some View {
+        switch appModel.notifications.authorizationStatus {
+        case .authorized, .provisional:
+            Label("Notifications are enabled", systemImage: "checkmark.circle")
+                .foregroundStyle(.secondary)
+        case .denied:
+            VStack(alignment: .leading, spacing: 4) {
+                Label(
+                    "Notifications are turned off",
+                    systemImage: "bell.slash"
+                )
+                .foregroundStyle(.secondary)
+                Text("Enable them in System Settings → Notifications → Study Block.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        default:
+            HStack {
+                Label(
+                    "Get notified when a session ends",
+                    systemImage: "bell"
+                )
+                .foregroundStyle(.secondary)
+                Spacer()
+                Button("Enable") {
+                    appModel.notifications.requestAuthorization()
+                }
+            }
+        }
     }
 
     private func presetBinding(_ index: Int) -> Binding<Int> {

@@ -15,6 +15,22 @@ struct ContentView: View {
             .snappy,
             value: appModel.settingsStore.settings.hasCompletedOnboarding
         )
+        .alert(
+            "Settings Storage Problem",
+            isPresented: Binding(
+                get: { appModel.settingsStore.pendingErrorAlert != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        appModel.settingsStore.acknowledgeErrorAlert()
+                    }
+                }
+            ),
+            presenting: appModel.settingsStore.pendingErrorAlert
+        ) { _ in
+            Button("OK") { appModel.settingsStore.acknowledgeErrorAlert() }
+        } message: { message in
+            Text(message)
+        }
     }
 }
 

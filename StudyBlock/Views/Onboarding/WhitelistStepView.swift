@@ -21,8 +21,7 @@ struct WhitelistStepView: View {
                 appSection
             }
             .padding(32)
-            .frame(maxWidth: 780, alignment: .leading)
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 

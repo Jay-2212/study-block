@@ -54,6 +54,9 @@ struct StudyBlockApp: App {
                 }
                 .keyboardShortcut(",", modifiers: .command)
             }
+            CommandMenu("Session") {
+                SessionCommands(appModel: appModel)
+            }
         }
 
         MenuBarExtra(
@@ -69,7 +72,12 @@ struct StudyBlockApp: App {
             SettingsView()
                 .environment(appModel)
                 .environment(appModel.listIcons)
-                .frame(width: 720, height: 620)
+                .frame(
+                    minWidth: 560,
+                    idealWidth: 640,
+                    minHeight: 460,
+                    idealHeight: 560
+                )
         }
     }
 }
