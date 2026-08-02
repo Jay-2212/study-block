@@ -6,6 +6,9 @@ Study Block is a native macOS focus app for keeping a study session visible and
 reducing distractions while it runs. It has a regular app window, a menu bar
 control, and a small floating timer.
 
+**Status:** active open-source macOS app. The latest published release verified
+for this repository is **v1.0.4** (28 July 2026).
+
 ## Features
 
 - Timed presets and an open-ended session option
@@ -34,6 +37,9 @@ before the session.
 Download the current DMG from the permanent
 [latest-release link](https://github.com/Jay-2212/study-block/releases/latest/download/StudyBlock.dmg).
 
+The [v1.0.4 release page](https://github.com/Jay-2212/study-block/releases/tag/v1.0.4)
+also includes `StudyBlock.dmg.sha256` for checksum verification.
+
 1. Open `StudyBlock.dmg`.
 2. Drag **Study Block** to **Applications**.
 3. Because this build is unsigned and not notarized, Control-click or
@@ -48,8 +54,16 @@ The release is built for Apple silicon.
 - Google Chrome for tab enforcement
 - Apple silicon for the downloadable build
 
-Do Not Disturb control and Chrome tab enforcement may prompt for macOS
-permissions when first used.
+The source project targets macOS 15. Intel support is not currently advertised
+or verified for the published DMG.
+
+Depending on the features you enable, macOS may ask for:
+
+- **Automation** to inspect and redirect Google Chrome tabs or pause music;
+- **Accessibility** to request the Do Not Disturb change;
+- **Focus status** and **notifications** for the optional session behavior.
+
+Study Block does not require Screen Recording permission.
 
 ## Build from source
 
@@ -93,6 +107,24 @@ Chrome inspection runs only during onboarding and active sessions. Study Block
 stores normalized domains rather than full browsing URLs. It suspends
 session-owned enforcement across sleep and restores Chrome tabs it redirected
 when a session stops or the app quits normally.
+
+To display website favicons, the app may request
+`https://<domain>/favicon.ico`. The domain can therefore observe that request;
+favicon retrieval is cached locally when successful. The app has no account or
+hosted backend in this repository. Settings, session checkpoints, history, and
+cached icons are stored locally on the Mac.
+
+## Limitations
+
+- Enforcement is cooperative and can be bypassed by closing, disabling, or
+  working around the app. It does not guarantee concentration.
+- The app may request another application's cooperative termination, but it
+  never force-quits applications and has no privileged helper.
+- Website enforcement targets Google Chrome and needs Chrome to be available;
+  other browsers are not supported by the current implementation.
+- It is a personal desktop utility, not enterprise device-management software.
+- A sleeping Mac, a locked session, denied permissions, or a failed Chrome
+  automation request can suspend or prevent enforcement.
 
 ## Project layout
 
