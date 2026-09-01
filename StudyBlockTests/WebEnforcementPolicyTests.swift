@@ -10,23 +10,29 @@ final class WebEnforcementPolicyTests: XCTestCase {
         )
     }
 
-    func testPermanentAllowancesOverrideBlacklist() {
+    func testWorkSitesAreBlockedWhenListed() {
         let policy = WebEnforcementPolicy(
             blacklistedDomains: [
-                "google.com", "google.co.in", "chatgpt.com",
-                "openai.com", "claude.ai", "anthropic.com"
+                "google.com", "chatgpt.com", "claude.ai"
             ]
         )
-        let urls = [
-            "https://docs.google.com/document/1",
-            "https://www.google.co.in/search?q=focus",
-            "https://chatgpt.com",
-            "https://platform.openai.com",
-            "https://claude.ai",
-            "https://docs.anthropic.com"
-        ]
-        for url in urls {
-            XCTAssertEqual(policy.decision(for: url), .allowed)
-        }
+        XCTAssertEqual(
+            policy.decision(for: "https://docs.google.com/document/1"),
+            .blocked(domain: "google.com")
+        )
+        XCTAssertEqual(
+            policy.decision(for: "https://chatgpt.com"),
+            .blocked(domain: "chatgpt.com")
+        )
+        XCTAssertEqual(
+            policy.decision(for: "https://claude.ai"),
+            .blocked(domain: "claude.ai")
+        )
+    }
+
+    func testUnlistedWorkSitesStayAllowed() {
+        let policy = WebEnforcementPolicy(blacklistedDomains: ["youtube.com"])
+        XCTAssertEqual(policy.decision(for: "https://chatgpt.com"), .allowed)
+        XCTAssertEqual(policy.decision(for: "https://claude.ai"), .allowed)
     }
 }

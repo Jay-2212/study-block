@@ -12,14 +12,18 @@ enum EnforcementPolicySmoke {
                 == .blocked(domain: "youtube.com") else {
             fatalError("YouTube should be blocked")
         }
-        for allowed in [
+        for blocked in [
             "https://docs.google.com",
             "https://chatgpt.com",
             "https://claude.ai"
         ] {
-            guard policy.decision(for: allowed) == .allowed else {
-                fatalError("\(allowed) must always be allowed")
+            guard case .blocked = policy.decision(for: blocked) else {
+                fatalError("\(blocked) should be blocked when listed")
             }
+        }
+        let openPolicy = WebEnforcementPolicy(blacklistedDomains: ["youtube.com"])
+        guard openPolicy.decision(for: "https://chatgpt.com") == .allowed else {
+            fatalError("Unlisted work sites should stay allowed")
         }
         print("Web enforcement policy smoke checks passed.")
     }

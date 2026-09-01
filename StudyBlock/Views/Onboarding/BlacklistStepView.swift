@@ -21,7 +21,7 @@ struct BlacklistStepView: View {
                 distractingApps
 
                 Label(
-                    "Google, ChatGPT, and Claude always remain available.",
+                    "Google, ChatGPT, and Claude are common work sites. They stay available unless you add them to this list.",
                     systemImage: "checkmark.shield"
                 )
                 .font(.callout)

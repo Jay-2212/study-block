@@ -151,13 +151,12 @@ private extension ChromeTabEnforcementService {
                     try redirect(blockedTabs)
                     for (tab, domain) in blockedTabs {
                         let key = "\(tab.windowIndex):\(tab.tabIndex)"
-                        if redirectedTabs[key] == nil {
-                            redirectedTabs[key] = RedirectedTab(
-                                windowIndex: tab.windowIndex,
-                                tabIndex: tab.tabIndex,
-                                originalURL: tab.url
-                            )
-                        }
+                        guard redirectedTabs[key] == nil else { continue }
+                        redirectedTabs[key] = RedirectedTab(
+                            windowIndex: tab.windowIndex,
+                            tabIndex: tab.tabIndex,
+                            originalURL: tab.url
+                        )
                         DispatchQueue.main.async { [weak self] in
                             self?.onRedirect?(domain)
                         }

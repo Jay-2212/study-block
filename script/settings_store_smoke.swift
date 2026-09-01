@@ -17,7 +17,9 @@ struct SettingsStoreSmoke {
         ]
         store.save(settings)
 
-        precondition(store.settings.blacklistedDomains == ["youtube.com"])
+        precondition(
+            store.settings.blacklistedDomains == ["google.com", "youtube.com"]
+        )
         precondition(store.settings.whitelistedDomains == ["notion.so"])
         precondition(SettingsStore(fileURL: fileURL).settings == store.settings)
         try? FileManager.default.removeItem(at: directory)

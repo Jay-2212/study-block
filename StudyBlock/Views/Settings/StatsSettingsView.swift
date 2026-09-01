@@ -25,6 +25,23 @@ struct StatsSettingsView: View {
                     )
                 }
 
+                DailyFocusChartView(points: stats.dailyFocus)
+
+                HStack(alignment: .top, spacing: 12) {
+                    BlockedRankList(
+                        title: "Most blocked sites",
+                        systemImage: "globe",
+                        sites: stats.topSites,
+                        apps: []
+                    )
+                    BlockedRankList(
+                        title: "Most blocked apps",
+                        systemImage: "app.dashed",
+                        sites: [],
+                        apps: stats.topApps
+                    )
+                }
+
                 Text("Recent completed sessions")
                     .font(.headline)
 
@@ -34,7 +51,7 @@ struct StatsSettingsView: View {
                         systemImage: "timer",
                         description: "Finish a timed session or stop an open-ended session to begin your history."
                     )
-                    .frame(maxWidth: .infinity, minHeight: 220)
+                    .frame(maxWidth: .infinity, minHeight: 180)
                 } else {
                     recentSessions
                 }
@@ -51,29 +68,35 @@ struct StatsSettingsView: View {
     private var recentSessions: some View {
         VStack(spacing: 0) {
             ForEach(appModel.sessionHistory.sessions.prefix(12)) { session in
-                HStack(spacing: 12) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.green)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(sessionTitle(session))
-                            .font(.body.weight(.medium))
-                        Text(
-                            session.startDate.formatted(
-                                date: .abbreviated,
-                                time: .shortened
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(.green)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(sessionTitle(session))
+                                .font(.body.weight(.medium))
+                            Text(
+                                session.startDate.formatted(
+                                    date: .abbreviated,
+                                    time: .shortened
+                                )
                             )
-                        )
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    }
-                    Spacer()
-                    if session.strictModeEnabled {
-                        Image(systemName: "lock.fill")
+                            .font(.caption)
                             .foregroundStyle(.secondary)
-                            .help("Strict mode")
+                        }
+                        Spacer()
+                        if session.strictModeEnabled {
+                            Image(systemName: "lock.fill")
+                                .foregroundStyle(.secondary)
+                                .help("Strict mode")
+                        }
+                        Text(format(session.durationSeconds))
+                            .monospacedDigit()
                     }
-                    Text(format(session.durationSeconds))
-                        .monospacedDigit()
+
+                    if !session.blockedSites.isEmpty || !session.blockedApps.isEmpty {
+                        sessionBlockChips(session)
+                    }
                 }
                 .padding(.vertical, 10)
                 if session.id != appModel.sessionHistory.sessions
@@ -84,6 +107,37 @@ struct StatsSettingsView: View {
         }
         .padding(.horizontal, 14)
         .studySurface(cornerRadius: 12)
+    }
+
+    private func sessionBlockChips(_ session: StudySessionRecord) -> some View {
+        HStack(spacing: 8) {
+            ForEach(session.blockedApps.prefix(4)) { app in
+                chip(
+                    title: app.name,
+                    icon: .application(app.bundleIdentifier)
+                )
+            }
+            ForEach(session.blockedSites.prefix(4)) { site in
+                chip(
+                    title: site.domain,
+                    icon: .website(site.domain)
+                )
+            }
+        }
+        .padding(.leading, 34)
+    }
+
+    private func chip(title: String, icon: ListIconSource) -> some View {
+        HStack(spacing: 5) {
+            ListIconView(source: icon, size: 14)
+            Text(title)
+                .font(.caption)
+                .lineLimit(1)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(.quaternary.opacity(0.5), in: Capsule())
+        .help(title)
     }
 
     private func sessionTitle(_ session: StudySessionRecord) -> String {

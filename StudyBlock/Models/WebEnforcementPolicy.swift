@@ -7,21 +7,6 @@ enum WebPolicyDecision: Equatable {
 }
 
 struct WebEnforcementPolicy: Equatable {
-    private static let permanentlyAllowedDomains: Set<String> = [
-        "anthropic.com",
-        "chatgpt.com",
-        "claude.ai",
-        "google.ca",
-        "google.co.in",
-        "google.co.jp",
-        "google.co.uk",
-        "google.com",
-        "google.com.au",
-        "google.de",
-        "google.fr",
-        "openai.com"
-    ]
-
     let blacklistedDomains: Set<String>
 
     init(blacklistedDomains: [String]) {
@@ -32,15 +17,8 @@ struct WebEnforcementPolicy: Equatable {
         guard let domain = try? DomainNormalizer.normalize(urlString) else {
             return .ignored
         }
-        if Self.isPermanentlyAllowed(domain) {
-            return .allowed
-        }
         return blacklistedDomains.contains(domain)
             ? .blocked(domain: domain)
             : .allowed
-    }
-
-    static func isPermanentlyAllowed(_ domain: String) -> Bool {
-        permanentlyAllowedDomains.contains(domain.lowercased())
     }
 }

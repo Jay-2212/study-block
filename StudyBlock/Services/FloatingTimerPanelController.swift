@@ -3,6 +3,8 @@ import SwiftUI
 
 @MainActor
 final class FloatingTimerPanelController {
+    private static let autosaveName = "StudyBlockFloatingTimer"
+
     private let timer: TimerCoordinator
     private var panel: NSPanel?
 
@@ -12,7 +14,7 @@ final class FloatingTimerPanelController {
 
     func show() {
         let panel = panel ?? makePanel()
-        position(panel)
+        restoreOrPlace(panel)
         panel.orderFrontRegardless()
     }
 
@@ -33,7 +35,7 @@ final class FloatingTimerPanelController {
             backing: .buffered,
             defer: false
         )
-        panel.contentView = NSHostingView(
+        panel.contentView = DragHostingView(
             rootView: FloatingTimerView(timer: timer)
         )
         panel.backgroundColor = .clear
@@ -45,8 +47,17 @@ final class FloatingTimerPanelController {
         panel.isMovableByWindowBackground = true
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.isReleasedWhenClosed = false
+        panel.setFrameAutosaveName(Self.autosaveName)
         self.panel = panel
         return panel
+    }
+
+    private func restoreOrPlace(_ panel: NSPanel) {
+        if panel.setFrameUsingName(Self.autosaveName, force: true) {
+            clampToVisibleScreen(panel)
+            return
+        }
+        position(panel)
     }
 
     private func position(_ panel: NSPanel) {
@@ -59,5 +70,31 @@ final class FloatingTimerPanelController {
             y: visibleFrame.maxY - panel.frame.height - 24
         )
         panel.setFrameOrigin(origin)
+        panel.saveFrame(usingName: Self.autosaveName)
+    }
+
+    private func clampToVisibleScreen(_ panel: NSPanel) {
+        let screen = NSScreen.screens.first { $0.frame.intersects(panel.frame) }
+            ?? NSScreen.main
+        guard let visibleFrame = screen?.visibleFrame else { return }
+        var frame = panel.frame
+        if !visibleFrame.contains(frame) {
+            frame.origin.x = min(
+                max(frame.origin.x, visibleFrame.minX + 8),
+                visibleFrame.maxX - frame.width - 8
+            )
+            frame.origin.y = min(
+                max(frame.origin.y, visibleFrame.minY + 8),
+                visibleFrame.maxY - frame.height - 8
+            )
+            panel.setFrame(frame, display: true)
+            panel.saveFrame(usingName: Self.autosaveName)
+        }
+    }
+}
+
+private final class DragHostingView<Content: View>: NSHostingView<Content> {
+    override func mouseDown(with event: NSEvent) {
+        window?.performDrag(with: event)
     }
 }

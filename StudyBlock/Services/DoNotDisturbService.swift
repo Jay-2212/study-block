@@ -9,11 +9,13 @@ import Observation
 final class DoNotDisturbService {
     private(set) var statusMessage: String?
     private(set) var isActiveForSession = false
+    private(set) var isAccessibilityTrusted = AXIsProcessTrusted()
 
     @ObservationIgnored private var changedFocus = false
     @ObservationIgnored private var hasSession = false
     @ObservationIgnored private var activationRequested = false
     @ObservationIgnored private var sessionToken = UUID()
+    @ObservationIgnored private var didPromptThisLaunch = false
 
     func start(enabled: Bool) {
         if hasSession {
@@ -86,8 +88,46 @@ final class DoNotDisturbService {
         isActiveForSession = false
     }
 
+    func refreshAccessibilityTrust() {
+        isAccessibilityTrusted = AXIsProcessTrusted()
+    }
+
+    func openAccessibilitySettings() {
+        let candidates = [
+            "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility",
+            "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_Accessibility"
+        ]
+        for candidate in candidates {
+            if let url = URL(string: candidate), NSWorkspace.shared.open(url) {
+                return
+            }
+        }
+    }
+
+    /// User-initiated only. Never call this from session start.
+    func promptForAccessibilityAccess() {
+        didPromptThisLaunch = true
+        let options = [
+            kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true
+        ] as CFDictionary
+        isAccessibilityTrusted = AXIsProcessTrustedWithOptions(options)
+        if !isAccessibilityTrusted {
+            statusMessage = "Allow Study Block in Accessibility to toggle Do Not Disturb."
+        }
+    }
+
+    func prepareDoNotDisturbPermission() {
+        refreshAccessibilityTrust()
+        guard !isAccessibilityTrusted else { return }
+        statusMessage = "Allow Study Block in Accessibility to toggle Do Not Disturb."
+        if !didPromptThisLaunch {
+            promptForAccessibilityAccess()
+        }
+    }
+
     private func enableThroughControlCenter() {
-        guard requestAccessibilityAccess() else {
+        refreshAccessibilityTrust()
+        guard isAccessibilityTrusted else {
             statusMessage = "Allow Study Block in Accessibility to toggle Do Not Disturb."
             return
         }
@@ -127,13 +167,6 @@ final class DoNotDisturbService {
                 ? "Do Not Disturb could not be confirmed as active."
                 : "Do Not Disturb restoration could not be confirmed."
         }
-    }
-
-    private func requestAccessibilityAccess() -> Bool {
-        let options = [
-            kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true
-        ] as CFDictionary
-        return AXIsProcessTrustedWithOptions(options)
     }
 
     private func toggleThroughControlCenter() throws {

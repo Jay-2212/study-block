@@ -32,6 +32,8 @@ struct SessionHistorySmoke {
         let stats = store.stats(now: now, calendar: calendar)
         precondition(stats.todaySeconds == 3_600)
         precondition(stats.streakDays == 3)
+        precondition(stats.dailyFocus.count == 14)
+        precondition(stats.topSites.isEmpty)
         precondition(SessionHistoryStore(
             fileURL: directory.appendingPathComponent("sessions.json")
         ).sessions.count == 3)

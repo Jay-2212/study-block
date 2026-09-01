@@ -1,15 +1,20 @@
-import Observation
 import SwiftUI
 
 struct SitesSettingsView: View {
     @Environment(AppModel.self) private var appModel
-    private let allowedEditor = DomainEntryModel()
-    private let blockedEditor = DomainEntryModel()
 
     var body: some View {
         Form {
+            ChromeTabPickerView(
+                picker: appModel.chromeTabs,
+                allowed: Set(appModel.settingsStore.settings.whitelistedDomains),
+                blocked: Set(appModel.settingsStore.settings.blacklistedDomains),
+                onAllow: { _ = addAllowedDomain($0) },
+                onBlock: setBlockedDomain
+            )
+
             DomainListEditor(
-                model: allowedEditor,
+                model: appModel.allowedDomainEditor,
                 title: "Study-site allowlist",
                 help: "Study sites always take precedence over the blocklist.",
                 domains: appModel.settingsStore.settings.whitelistedDomains,
@@ -18,9 +23,9 @@ struct SitesSettingsView: View {
             )
 
             DomainListEditor(
-                model: blockedEditor,
+                model: appModel.blockedDomainEditor,
                 title: "Website blocklist",
-                help: "Google, ChatGPT, and Claude can never be blocked.",
+                help: "Google, ChatGPT, and Claude are suggested as work sites, but they can be blocked if you add them here.",
                 domains: appModel.settingsStore.settings.blacklistedDomains,
                 onAdd: addBlockedDomain,
                 onRemove: removeBlockedDomain
@@ -69,6 +74,8 @@ struct SitesSettingsView: View {
             }
         }
         .formStyle(.grouped)
+        .onAppear { appModel.chromeTabs.start() }
+        .onDisappear { appModel.chromeTabs.stop() }
     }
 
     @ViewBuilder
@@ -109,22 +116,28 @@ struct SitesSettingsView: View {
     private func addAllowedDomain(_ domain: String) -> String? {
         var settings = appModel.settingsStore.settings
         settings.blacklistedDomains.removeAll { $0 == domain }
-        settings.whitelistedDomains.append(domain)
+        if !settings.whitelistedDomains.contains(domain) {
+            settings.whitelistedDomains.append(domain)
+        }
         appModel.settingsStore.save(settings)
         return nil
     }
 
     private func addBlockedDomain(_ domain: String) -> String? {
-        if WebEnforcementPolicy.isPermanentlyAllowed(domain) {
-            return "\(domain) is always available."
-        }
         if appModel.settingsStore.settings.whitelistedDomains.contains(domain) {
             return "\(domain) is a study site. Remove it from the allowlist first."
         }
-        var settings = appModel.settingsStore.settings
-        settings.blacklistedDomains.append(domain)
-        appModel.settingsStore.save(settings)
+        setBlockedDomain(domain)
         return nil
+    }
+
+    private func setBlockedDomain(_ domain: String) {
+        var settings = appModel.settingsStore.settings
+        settings.whitelistedDomains.removeAll { $0 == domain }
+        if !settings.blacklistedDomains.contains(domain) {
+            settings.blacklistedDomains.append(domain)
+        }
+        appModel.settingsStore.save(settings)
     }
 
     private func removeAllowedDomain(_ domain: String) {
@@ -154,82 +167,4 @@ struct SitesSettingsView: View {
         }
         appModel.settingsStore.save(settings)
     }
-}
-
-private struct DomainListEditor: View {
-    @Bindable var model: DomainEntryModel
-    let title: String
-    let help: String
-    let domains: [String]
-    let onAdd: (String) -> String?
-    let onRemove: (String) -> Void
-
-    var body: some View {
-        Section {
-            if domains.isEmpty {
-                StudyEmptyState(
-                    title: "No sites added",
-                    systemImage: "globe",
-                    compact: true
-                )
-            } else {
-                ForEach(domains, id: \.self) { domain in
-                    HStack {
-                        ListIconView(source: .website(domain), size: 20)
-                        Text(domain)
-                        Spacer()
-                        Button {
-                            onRemove(domain)
-                        } label: {
-                            Image(systemName: "minus.circle")
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("Remove \(domain)")
-                    }
-                }
-            }
-
-            HStack {
-                TextField("Domain or URL", text: $model.entry)
-                    .onSubmit(add)
-                Button("Add", action: add)
-                    .disabled(
-                        model.entry.trimmingCharacters(in: .whitespacesAndNewlines)
-                            .isEmpty
-                    )
-            }
-
-            if let validationMessage = model.validationMessage {
-                Label(validationMessage, systemImage: "exclamationmark.triangle")
-                    .font(.caption)
-                    .foregroundStyle(.orange)
-            }
-        } header: {
-            Text(title)
-        } footer: {
-            Text(help)
-        }
-    }
-
-    private func add() {
-        do {
-            let domain = try DomainNormalizer.normalize(model.entry)
-            if domains.contains(domain) {
-                model.validationMessage = "\(domain) is already listed."
-                return
-            }
-            model.validationMessage = onAdd(domain)
-            guard model.validationMessage == nil else { return }
-            model.entry = ""
-        } catch {
-            model.validationMessage = error.localizedDescription
-        }
-    }
-}
-
-@MainActor
-@Observable
-private final class DomainEntryModel {
-    var entry = ""
-    var validationMessage: String?
 }

@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.1.0 — 2026-09-01
+
+- Made the floating focus timer draggable and remembered where you left it.
+- Stopped asking for Accessibility on every session start. Do Not Disturb now
+  checks silently and explains in Settings when access is missing.
+- Fixed adding websites in Settings and listed open Chrome tabs so you can
+  allow or block them directly.
+- Google, ChatGPT, and Claude are suggested work sites, not permanently
+  unblockable.
+- Stats now shows focus time by day, most blocked sites and apps, and what
+  was blocked in each session.
+
 ## 1.0.4 — 2026-07-28
 
 - Fixed a shutdown deadlock by restoring redirected Chrome tabs on the

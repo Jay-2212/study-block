@@ -43,6 +43,7 @@ struct SessionSettingsView: View {
                 Text("An existing Focus is preserved. Study Block restores only the state it changed.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                accessibilityRow
             }
 
             Section("Session-complete notifications") {
@@ -52,6 +53,36 @@ struct SessionSettingsView: View {
         .formStyle(.grouped)
         .onAppear {
             appModel.notifications.refreshAuthorizationStatus()
+            appModel.doNotDisturb.refreshAccessibilityTrust()
+        }
+    }
+
+    @ViewBuilder
+    private var accessibilityRow: some View {
+        if appModel.doNotDisturb.isAccessibilityTrusted {
+            Label(
+                "Accessibility is allowed for Do Not Disturb",
+                systemImage: "checkmark.circle"
+            )
+            .foregroundStyle(.secondary)
+        } else {
+            VStack(alignment: .leading, spacing: 8) {
+                Label(
+                    "Do Not Disturb needs Accessibility",
+                    systemImage: "hand.raised"
+                )
+                Text("Study Block only uses this to turn Focus on for a session. It will not ask again every time you start.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                HStack {
+                    Button("Allow Accessibility…") {
+                        appModel.doNotDisturb.promptForAccessibilityAccess()
+                    }
+                    Button("Open Settings") {
+                        appModel.doNotDisturb.openAccessibilitySettings()
+                    }
+                }
+            }
         }
     }
 
@@ -110,7 +141,12 @@ struct SessionSettingsView: View {
     private var doNotDisturbBinding: Binding<Bool> {
         Binding(
             get: { appModel.settingsStore.settings.doNotDisturbEnabled },
-            set: { appModel.settingsStore.updateDoNotDisturb($0) }
+            set: { enabled in
+                appModel.settingsStore.updateDoNotDisturb(enabled)
+                if enabled {
+                    appModel.doNotDisturb.prepareDoNotDisturbPermission()
+                }
+            }
         )
     }
 }

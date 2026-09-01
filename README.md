@@ -7,7 +7,7 @@ reducing distractions while it runs. It has a regular app window, a menu bar
 control, and a small floating timer.
 
 **Status:** active open-source macOS app. The latest published release verified
-for this repository is **v1.0.4** (28 July 2026).
+for this repository is **v1.1.0** (1 September 2026).
 
 ## Features
 
@@ -21,12 +21,13 @@ for this repository is **v1.0.4** (28 July 2026).
 - Website favicons and native app icons with fast local caching and fallbacks
 - Editable study sites, blocked sites and apps, presets, and defaults
 - Settings from the ready screen, app menu, or Command-Comma
-- Local session history, weekly focus time, and streaks
+- Local session history, daily focus time, streaks, and most-blocked sites/apps
 - Launch at login and interrupted-session recovery
 
 Study sites take precedence over the blocklist. Google, ChatGPT, and Claude are
-always available. Settings, session checkpoints, and history stay on your Mac,
-and Study Block never force-quits another app.
+suggested as common work sites, but they can be blocked if you add them.
+Settings, session checkpoints, and history stay on your Mac, and Study Block
+never force-quits another app.
 
 Do Not Disturb is released when a session stops or expires, when the Mac
 sleeps, and before Study Block quits, restoring the Focus state that existed
@@ -37,7 +38,7 @@ before the session.
 Download the current DMG from the permanent
 [latest-release link](https://github.com/Jay-2212/study-block/releases/latest/download/StudyBlock.dmg).
 
-The [v1.0.4 release page](https://github.com/Jay-2212/study-block/releases/tag/v1.0.4)
+The [v1.1.0 release page](https://github.com/Jay-2212/study-block/releases/tag/v1.1.0)
 also includes `StudyBlock.dmg.sha256` for checksum verification.
 
 1. Open `StudyBlock.dmg`.
@@ -60,7 +61,7 @@ or verified for the published DMG.
 Depending on the features you enable, macOS may ask for:
 
 - **Automation** to inspect and redirect Google Chrome tabs or pause music;
-- **Accessibility** to request the Do Not Disturb change;
+- **Accessibility** only if you turn on Do Not Disturb, and not on every session start;
 - **Focus status** and **notifications** for the optional session behavior.
 
 Study Block does not require Screen Recording permission.

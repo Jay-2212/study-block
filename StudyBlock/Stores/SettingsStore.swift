@@ -103,10 +103,7 @@ final class SettingsStore {
         settings.whitelistedDomains = normalizedUnique(settings.whitelistedDomains)
         let allowed = Set(settings.whitelistedDomains)
         settings.blacklistedDomains = normalizedUnique(settings.blacklistedDomains)
-            .filter {
-                !allowed.contains($0)
-                    && !WebEnforcementPolicy.isPermanentlyAllowed($0)
-            }
+            .filter { !allowed.contains($0) }
         settings.sessionPresetMinutes = Array(
             settings.sessionPresetMinutes.prefix(3)
         ).map { min(max($0, 1), 480) }

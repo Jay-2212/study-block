@@ -40,7 +40,7 @@ final class SettingsStoreTests: XCTestCase {
         XCTAssertFalse(settings.launchAtLoginEnabled)
     }
 
-    func testAllowlistWinsAndPermanentDomainsAreNeverBlocked() {
+    func testAllowlistWinsAndWorkSitesCanBeBlocked() {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
         let fileURL = directory.appendingPathComponent("settings.json")
@@ -56,7 +56,10 @@ final class SettingsStoreTests: XCTestCase {
         store.save(settings)
 
         XCTAssertEqual(store.settings.whitelistedDomains, ["notion.so"])
-        XCTAssertEqual(store.settings.blacklistedDomains, ["youtube.com"])
+        XCTAssertEqual(
+            store.settings.blacklistedDomains,
+            ["google.com", "youtube.com"]
+        )
         try? FileManager.default.removeItem(at: directory)
     }
 

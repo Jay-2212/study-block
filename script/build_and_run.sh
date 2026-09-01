@@ -152,6 +152,7 @@ build_with_command_line_tools() {
     -framework AppKit \
     -framework SwiftUI \
     -framework Foundation \
+    -framework Charts \
     "${sources[@]}" \
     -o "$APP_BINARY"
 

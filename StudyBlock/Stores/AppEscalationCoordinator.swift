@@ -16,6 +16,7 @@ final class AppEscalationCoordinator {
     var warningDuration: TimeInterval { isStrictMode ? 10 : 30 }
 
     @ObservationIgnored var presentationHandler: ((Bool) -> Void)?
+    @ObservationIgnored var blockHandler: ((AppChoice) -> Void)?
     @ObservationIgnored private let workspaceMonitor = WorkspaceMonitor()
     @ObservationIgnored private let terminationService = AppTerminationService()
     @ObservationIgnored private var stateMachine = AppEscalationStateMachine()
@@ -137,6 +138,7 @@ final class AppEscalationCoordinator {
     private func handle(_ event: AppEscalationEvent) {
         switch event {
         case .showNudge(let state):
+            blockHandler?(state.app)
             show(state)
         case .showWarning(let state):
             warningRemainingSeconds = Int(warningDuration)

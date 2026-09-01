@@ -61,8 +61,66 @@ final class SessionHistoryStore {
         return SessionStats(
             todaySeconds: todaySeconds,
             weekSeconds: weekSeconds,
-            streakDays: streak
+            streakDays: streak,
+            dailyFocus: dailyFocus(now: now, calendar: calendar, days: 14),
+            topSites: aggregatedSites(),
+            topApps: aggregatedApps()
         )
+    }
+
+    private func dailyFocus(
+        now: Date,
+        calendar: Calendar,
+        days: Int
+    ) -> [DailyFocusPoint] {
+        let today = calendar.startOfDay(for: now)
+        return (0..<days).compactMap { offset -> DailyFocusPoint? in
+            guard let date = calendar.date(
+                byAdding: .day,
+                value: offset - (days - 1),
+                to: today
+            ) else {
+                return nil
+            }
+            let next = calendar.date(byAdding: .day, value: 1, to: date) ?? now
+            let seconds = sessions
+                .filter { $0.startDate >= date && $0.startDate < next }
+                .reduce(0) { $0 + $1.durationSeconds }
+            return DailyFocusPoint(date: date, seconds: seconds)
+        }
+    }
+
+    private func aggregatedSites() -> [BlockedSiteStat] {
+        var totals: [String: Int] = [:]
+        for session in sessions {
+            for site in session.blockedSites {
+                totals[site.domain, default: 0] += site.count
+            }
+        }
+        return totals
+            .map { BlockedSiteStat(domain: $0.key, count: $0.value) }
+            .sorted { lhs, rhs in
+                if lhs.count == rhs.count { return lhs.domain < rhs.domain }
+                return lhs.count > rhs.count
+            }
+    }
+
+    private func aggregatedApps() -> [BlockedAppStat] {
+        var totals: [String: BlockedAppStat] = [:]
+        for session in sessions {
+            for app in session.blockedApps {
+                let current = totals[app.bundleIdentifier]?.count ?? 0
+                totals[app.bundleIdentifier] = BlockedAppStat(
+                    name: app.name,
+                    bundleIdentifier: app.bundleIdentifier,
+                    count: current + app.count
+                )
+            }
+        }
+        return totals.values.sorted { lhs, rhs in
+            if lhs.count == rhs.count { return lhs.name < rhs.name }
+            return lhs.count > rhs.count
+        }
     }
 
     private func load() {

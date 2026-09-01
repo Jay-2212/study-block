@@ -11,7 +11,7 @@ completed-session history as atomic JSON in Application Support.
 Core guarantees:
 
 - Study-site allowlist entries always beat the blocklist.
-- Google, ChatGPT, and Claude are permanently unblockable.
+- Google, ChatGPT, and Claude are suggested as common work sites, not permanently unblockable.
 - Enforcement runs only during a session and fails open when Chrome is absent.
 - Study Block never force-quits an app and never targets itself or Chrome.
 - Do Not Disturb preserves an existing Focus and restores only the state Study

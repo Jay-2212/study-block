@@ -13,6 +13,9 @@ final class AppModel {
     let notifications = NotificationService()
     let listIcons = ListIconStore()
     let launchAtLogin = LaunchAtLoginService()
+    let allowedDomainEditor = DomainEntryModel()
+    let blockedDomainEditor = DomainEntryModel()
+    let chromeTabs = ChromeTabPickerStore()
     private(set) var lastBlockedDomain: String?
     private(set) var enforcementMessage: String?
     private(set) var lastCompletionMessage: String?
@@ -21,6 +24,7 @@ final class AppModel {
     @ObservationIgnored private var nudgePanelController: NudgePanelController!
     @ObservationIgnored private var webEnforcement: WebEnforcementProvider!
     @ObservationIgnored private let musicBlocking = MusicBlockingService()
+    @ObservationIgnored private let blockTracker = SessionBlockTracker()
     @ObservationIgnored private var lifecycleObservers: [NSObjectProtocol] = []
     @ObservationIgnored private let activeSessionPersistence =
         ActiveSessionPersistence()
@@ -64,6 +68,10 @@ final class AppModel {
         chromeEnforcement.redirectHandler = { [weak self] domain in
             self?.lastBlockedDomain = domain
             self?.enforcementMessage = nil
+            self?.blockTracker.recordSite(domain)
+        }
+        appEscalation.blockHandler = { [weak self] app in
+            self?.blockTracker.recordApp(app)
         }
         chromeEnforcement.errorHandler = { [weak self] message in
             self?.enforcementMessage = message
@@ -87,6 +95,7 @@ final class AppModel {
                 )
                 self.activeStrictMode = self.settingsStore.settings.strictModeEnabled
                 self.lastCompletionMessage = nil
+                self.blockTracker.reset()
                 self.startSessionResources(
                     startDate: startDate,
                     endDate: endDate
@@ -107,7 +116,9 @@ final class AppModel {
                             endDate: endDate,
                             plannedDurationMinutes: plannedDurationMinutes,
                             preset: preset,
-                            strictModeEnabled: self.activeStrictMode
+                            strictModeEnabled: self.activeStrictMode,
+                            blockedSites: self.blockTracker.siteSnapshot(),
+                            blockedApps: self.blockTracker.appSnapshot()
                         )
                     )
                     let message = Self.completionMessage(
@@ -246,6 +257,17 @@ final class AppModel {
                 queue: .main
             ) { [weak self] _ in
                 Task { @MainActor in self?.timer.reconcileTime() }
+            }
+        )
+        lifecycleObservers.append(
+            NotificationCenter.default.addObserver(
+                forName: NSApplication.didBecomeActiveNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                Task { @MainActor in
+                    self?.doNotDisturb.refreshAccessibilityTrust()
+                }
             }
         )
         lifecycleObservers.append(
