@@ -13,6 +13,8 @@ struct AppSettings: Codable, Equatable {
     var strictModeEnabled = false
     var doNotDisturbEnabled = false
     var launchAtLoginEnabled = false
+    var showFloatingTimer = true
+    var showNotchIndicator = true
 
     static let empty = AppSettings()
 
@@ -60,5 +62,13 @@ struct AppSettings: Codable, Equatable {
             Bool.self,
             forKey: .launchAtLoginEnabled
         ) ?? false
+        showFloatingTimer = try values.decodeIfPresent(
+            Bool.self,
+            forKey: .showFloatingTimer
+        ) ?? true
+        showNotchIndicator = try values.decodeIfPresent(
+            Bool.self,
+            forKey: .showNotchIndicator
+        ) ?? true
     }
 }

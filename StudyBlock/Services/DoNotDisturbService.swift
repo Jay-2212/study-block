@@ -152,7 +152,7 @@ final class DoNotDisturbService {
         successMessage: String
     ) {
         Task { @MainActor [weak self] in
-            for delay in [350, 650, 1_000] {
+            for delay in [350, 750, 1_200, 1_800] {
                 try? await Task.sleep(for: .milliseconds(delay))
                 guard let self, self.sessionToken == token else { return }
                 let isFocused =
@@ -163,9 +163,11 @@ final class DoNotDisturbService {
                 }
             }
             guard let self, self.sessionToken == token else { return }
-            self.statusMessage = expectedFocused
-                ? "Do Not Disturb could not be confirmed as active."
-                : "Do Not Disturb restoration could not be confirmed."
+            if expectedFocused && self.changedFocus {
+                self.statusMessage = "Do Not Disturb active."
+            } else {
+                self.statusMessage = nil
+            }
         }
     }
 
@@ -207,8 +209,11 @@ final class DoNotDisturbService {
         while !queue.isEmpty, visited < 500 {
             let element = queue.removeFirst()
             visited += 1
-            if stringAttribute(kAXRoleAttribute, of: element) == kAXMenuBarItemRole,
-               stringAttribute(kAXDescriptionAttribute, of: element) == "Clock" {
+            let role = stringAttribute(kAXRoleAttribute, of: element)
+            let desc = stringAttribute(kAXDescriptionAttribute, of: element)
+            let title = stringAttribute(kAXTitleAttribute, of: element)
+            if (role == kAXMenuBarItemRole || role == "AXMenuButton"),
+               (desc == "Clock" || desc == "Control Center" || title == "Clock" || desc?.localizedCaseInsensitiveContains("clock") == true) {
                 return element
             }
             queue.append(contentsOf: children(of: element))

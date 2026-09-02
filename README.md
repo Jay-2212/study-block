@@ -7,12 +7,13 @@ reducing distractions while it runs. It has a regular app window, a menu bar
 control, and a small floating timer.
 
 **Status:** active open-source macOS app. The latest published release verified
-for this repository is **v1.1.1** (2 September 2026).
+for this repository is **v1.2.0** (2 September 2026).
 
 ## Features
 
 - Timed presets and an open-ended session option
-- A draggable, always-on-top floating timer
+- A draggable floating HUD with an animated perimeter progress bar
+- A subtle MacBook camera notch session contour (or top-center pill fallback)
 - Chrome tab enforcement that redirects blocked sites during a session
 - An app nudge ladder: reminder, short allowance, warning, then a cooperative
   quit request
@@ -38,7 +39,7 @@ before the session.
 Download the current DMG from the permanent
 [latest-release link](https://github.com/Jay-2212/study-block/releases/latest/download/StudyBlock.dmg).
 
-The [v1.1.1 release page](https://github.com/Jay-2212/study-block/releases/tag/v1.1.1)
+The [v1.2.0 release page](https://github.com/Jay-2212/study-block/releases/tag/v1.2.0)
 also includes `StudyBlock.dmg.sha256` for checksum verification.
 
 1. Open `StudyBlock.dmg`.

@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.0 — 2026-09-02
+
+- Added an animated perimeter progress bar tracing the perimeter of the floating HUD.
+- Introduced a subtle MacBook camera notch session contour (with smooth fallback to a compact pill on non-notch displays).
+- Fixed menu bar item selection glitch during active sessions by stabilizing item rendering.
+- Replaced unbounded favicon dictionary with bounded, thread-safe `NSCache`.
+- Optimized Chrome tab scanning with active-app detection and relaxed background intervals.
+- Made the escalation ticker on-demand, completely pausing it when no countdowns are active.
+- Improved Do Not Disturb reliability and verification timing for macOS 15.
+
 ## 1.1.1 — 2026-09-02
 
 - Quieted the ready screen so choosing a duration and starting is the only job.

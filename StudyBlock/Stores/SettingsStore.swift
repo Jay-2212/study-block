@@ -78,6 +78,18 @@ final class SettingsStore {
         save(updated)
     }
 
+    func updateShowFloatingTimer(_ isEnabled: Bool) {
+        var updated = settings
+        updated.showFloatingTimer = isEnabled
+        save(updated)
+    }
+
+    func updateShowNotchIndicator(_ isEnabled: Bool) {
+        var updated = settings
+        updated.showNotchIndicator = isEnabled
+        save(updated)
+    }
+
     private func load() {
         do {
             let loaded: AppSettings? = try ioQueue.sync {

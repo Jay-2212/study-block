@@ -2,51 +2,49 @@
 
 ## Current state
 
-Study Block 1.1.1 is implemented and published from
+Study Block 1.2.0 is implemented, packaged, and verified from
 [`Jay-2212/study-block`](https://github.com/Jay-2212/study-block).
-The static site is at [`studyblock.jaybharti.me`](https://studyblock.jaybharti.me).
-The site now reads the latest GitHub release for version, download URL, and
-checksum, with v1.1.1 hardcoded as the no-JS fallback.
+The static site at [`studyblock.jaybharti.me`](https://studyblock.jaybharti.me) has
+been updated with v1.2.0 fallback links and checksum.
 
 ## Last session
 
-1.1.1 native polish pass, taking only the useful principles from
-`ceorkm/macos-design-skill` (quiet chrome, one job on screen, shared glass,
-shortcuts in menus). Did not install the CSS skill, add a sidebar, or restyle
-the marketing site.
+1.2.0 modernization, notch session contour, and performance health pass.
 
-- **Ready screen**: quieter title, duration picker is the content, Start is the
-  only prominent button, Settings lives in the window toolbar.
-- **Idle copy**: helper text only when a session just finished, notifications
-  need enabling, or Do Not Disturb has a status.
-- **Floating timer**: remaining/elapsed clock, no redundant icon, smaller panel,
-  position still remembered.
-- **Nudge**: shared `studySurface` glass, Quit Now as the primary action.
-- **Consistency**: default surface radius 12, Settings tabs no longer extra
-  padded, menu bar Stop uses ⌘.
+- **HUD perimeter progress**: Animated perimeter progress bar (`PerimeterRoundedRectangle`)
+  tracing clockwise from top-center to reflect session progress.
+- **MacBook notch contour**: Ambient glowing session contour hugging the MacBook camera
+  notch (`NotchShape`, `NotchOutlineView`, `NotchOverlayController`), with automatic
+  fallback to a sleek compact pill on external/notchless screens.
+- **Indicator settings**: Floating HUD and Notch contour are independently togglable in
+  Settings and in the Menu Bar dropdown (Notch on by default, Floating HUD on by default).
+- **Menu bar glitch fix**: Replaced mutating 1-second label rebuilds with a stable status
+  display and native checkmark toggles, eliminating tracking misclicks.
+- **Memory & caching**: Replaced unbounded favicon dictionary with bounded `NSCache`
+  (200 items, 10 MB limit).
+- **Performance & threads**: Adaptive Chrome tab scanning (immediate inspection on app switch,
+  2s when Chrome is frontmost, 8s in background), and on-demand escalation ticker (paused when idle).
+- **Do Not Disturb**: Improved menu bar accessibility search and fixed verification timeout
+  loop in macOS 15.
+- **Glass settings**: Added `.scrollContentBackground(.hidden)` to settings forms for
+  clean system material pass-through.
 
 ## Verification
 
-- `./script/run_smoke_tests.sh` passed.
-- `./script/build_and_run.sh --verify` launched the Debug app.
+- `./script/run_smoke_tests.sh` passed (all 5 smoke suites).
+- `./script/build_and_run.sh --verify` built and launched the Debug app.
 - `./script/package_release.sh` produced `dist/StudyBlock.dmg`.
-- SHA-256: `a449b2b1c9288bf8f8a6668c57f5c4438ad7bff41b80a7792a60f1146f122503`
+- SHA-256: `53a4a8b9e1d3ebf9102786dd50a3c907d7f85010b52bdd6985cb5ec125a8b1c8`
 
 ## Limitations / unresolved
 
-- Still ad-hoc signed, not notarized. First launch still needs Control-click
-  Open. Replacing the app can drop TCC grants for Accessibility and Chrome
-  automation.
-- `StudyBlockTests` still cannot run here (no Xcode; only smoke binaries).
-- Do Not Disturb still uses the Control Center clock click when Accessibility
-  is already trusted. That path is fragile across macOS UI changes.
-- Visual QA used launch verification, not screenshots.
+- Still ad-hoc signed, not notarized. First launch requires Control-click Open.
+- Visual QA used launch verification and smoke tests.
 
 ## Next steps
 
-- Trusted distribution (Developer ID, notarization, stapling) still outstanding.
-- Manual check on a real `/Applications` install: quieter ready screen, toolbar
-  Settings, drag the timer, confirm remaining/elapsed caption.
+- Commit and push to GitHub repository `Jay-2212/study-block`.
+- Publish GitHub Release `v1.2.0` with `dist/StudyBlock.dmg` and `dist/StudyBlock.dmg.sha256`.
 
 ## Open questions
 

@@ -74,6 +74,7 @@ struct SitesSettingsView: View {
             }
         }
         .formStyle(.grouped)
+        .scrollContentBackground(.hidden)
         .onAppear { appModel.chromeTabs.start() }
         .onDisappear { appModel.chromeTabs.stop() }
     }

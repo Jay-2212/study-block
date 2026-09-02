@@ -46,11 +46,24 @@ struct SessionSettingsView: View {
                 accessibilityRow
             }
 
+            Section("Session indicators") {
+                Toggle("Show floating HUD timer", isOn: floatingTimerBinding)
+                Text("A draggable floating HUD showing remaining focus time and perimeter progress.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                Toggle("Show MacBook notch contour", isOn: notchIndicatorBinding)
+                Text("A subtle glowing outline around the MacBook camera notch tracing your session progress.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
             Section("Session-complete notifications") {
                 notificationStatusRow
             }
         }
         .formStyle(.grouped)
+        .scrollContentBackground(.hidden)
         .onAppear {
             appModel.notifications.refreshAuthorizationStatus()
             appModel.doNotDisturb.refreshAccessibilityTrust()
@@ -146,6 +159,26 @@ struct SessionSettingsView: View {
                 if enabled {
                     appModel.doNotDisturb.prepareDoNotDisturbPermission()
                 }
+            }
+        )
+    }
+
+    private var floatingTimerBinding: Binding<Bool> {
+        Binding(
+            get: { appModel.settingsStore.settings.showFloatingTimer },
+            set: { isEnabled in
+                appModel.settingsStore.updateShowFloatingTimer(isEnabled)
+                appModel.updateIndicatorsVisibility()
+            }
+        )
+    }
+
+    private var notchIndicatorBinding: Binding<Bool> {
+        Binding(
+            get: { appModel.settingsStore.settings.showNotchIndicator },
+            set: { isEnabled in
+                appModel.settingsStore.updateShowNotchIndicator(isEnabled)
+                appModel.updateIndicatorsVisibility()
             }
         )
     }

@@ -7,14 +7,30 @@ struct MenuBarContentView: View {
 
     var body: some View {
         if appModel.timer.isRunning {
-            Label(appModel.timer.formattedTime, systemImage: "timer")
-                .monospacedDigit()
+            Button("Session: \(appModel.timer.formattedTime)") {}
+                .disabled(true)
             Divider()
-            Button(
-                appModel.timer.isPanelVisible ? "Hide Floating Timer" : "Show Floating Timer"
-            ) {
-                appModel.timer.togglePanelVisibility()
-            }
+            Toggle(
+                "Floating Timer",
+                isOn: Binding(
+                    get: { appModel.settingsStore.settings.showFloatingTimer },
+                    set: { isEnabled in
+                        appModel.settingsStore.updateShowFloatingTimer(isEnabled)
+                        appModel.updateIndicatorsVisibility()
+                    }
+                )
+            )
+            Toggle(
+                "Notch Indicator",
+                isOn: Binding(
+                    get: { appModel.settingsStore.settings.showNotchIndicator },
+                    set: { isEnabled in
+                        appModel.settingsStore.updateShowNotchIndicator(isEnabled)
+                        appModel.updateIndicatorsVisibility()
+                    }
+                )
+            )
+            Divider()
             Button("Stop Session") {
                 appModel.timer.stop()
             }

@@ -21,6 +21,7 @@ final class AppModel {
     private(set) var lastCompletionMessage: String?
 
     @ObservationIgnored private var timerPanelController: FloatingTimerPanelController!
+    @ObservationIgnored private var notchOverlayController: NotchOverlayController!
     @ObservationIgnored private var nudgePanelController: NudgePanelController!
     @ObservationIgnored private var webEnforcement: WebEnforcementProvider!
     @ObservationIgnored private let musicBlocking = MusicBlockingService()
@@ -47,16 +48,13 @@ final class AppModel {
         }
 
         timerPanelController = FloatingTimerPanelController(timer: timer)
+        notchOverlayController = NotchOverlayController(timer: timer)
         nudgePanelController = NudgePanelController(coordinator: appEscalation)
         let chromeEnforcement = ChromeTabEnforcementService()
         webEnforcement = chromeEnforcement
 
-        timer.presentationHandler = { [weak timerPanelController] shouldShow in
-            if shouldShow {
-                timerPanelController?.show()
-            } else {
-                timerPanelController?.hide()
-            }
+        timer.presentationHandler = { [weak self] shouldShow in
+            self?.updateIndicatorsVisibility(shouldShow: shouldShow)
         }
         appEscalation.presentationHandler = { [weak nudgePanelController] shouldShow in
             if shouldShow {
@@ -180,8 +178,24 @@ final class AppModel {
         timer.terminate()
         stopSessionResources()
         timerPanelController.close()
+        notchOverlayController.close()
         nudgePanelController.close()
         removeLifecycleObservers()
+    }
+
+    func updateIndicatorsVisibility(shouldShow: Bool? = nil) {
+        let visible = shouldShow ?? (timer.isRunning && timer.isPanelVisible)
+        if visible && settingsStore.settings.showFloatingTimer {
+            timerPanelController.show()
+        } else {
+            timerPanelController.hide()
+        }
+
+        if visible && settingsStore.settings.showNotchIndicator {
+            notchOverlayController.show()
+        } else {
+            notchOverlayController.hide()
+        }
     }
 
     private func startSessionResources(startDate: Date, endDate: Date?) {
@@ -218,6 +232,7 @@ final class AppModel {
     }
 
     private func applySettingsLive() {
+        updateIndicatorsVisibility()
         guard timer.isRunning,
               !isSuspended,
               let startDate = timer.sessionStartDate else {
@@ -287,6 +302,7 @@ final class AppModel {
         timer.suspendForSleep()
         stopSessionResources()
         timerPanelController.hide()
+        notchOverlayController.hide()
         nudgePanelController.hide()
     }
 

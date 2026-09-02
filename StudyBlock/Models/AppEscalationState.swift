@@ -40,6 +40,17 @@ enum AllowanceValidationError: LocalizedError, Equatable {
 struct AppEscalationStateMachine {
     private(set) var states: [String: AppEscalationState] = [:]
 
+    var hasActiveTimedStages: Bool {
+        states.values.contains {
+            switch $0.stage {
+            case .snoozed, .allowance, .warning:
+                return true
+            case .nudge, .quitRequested, .quitFailed:
+                return false
+            }
+        }
+    }
+
     mutating func observe(_ app: AppChoice) -> AppEscalationEvent? {
         if let state = states[app.bundleIdentifier] {
             return state.stage == .nudge ? .showNudge(state) : nil

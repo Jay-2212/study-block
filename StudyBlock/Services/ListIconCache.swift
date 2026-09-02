@@ -12,11 +12,13 @@ enum ListIconSource: Hashable {
 actor WebsiteIconCache {
     static let shared = WebsiteIconCache()
 
-    private var memory: [String: Data] = [:]
+    private let memory = NSCache<NSString, NSData>()
     private var unavailable: Set<String> = []
     private let cacheDirectory: URL
 
     private init() {
+        memory.countLimit = 200
+        memory.totalCostLimit = 10 * 1024 * 1024 // 10 MB limit
         let applicationSupport = FileManager.default.urls(
             for: .applicationSupportDirectory,
             in: .userDomainMask
@@ -28,15 +30,16 @@ actor WebsiteIconCache {
 
     func iconData(for domain: String) async -> Data? {
         let normalized = domain.lowercased()
-        if let cached = memory[normalized] {
-            return cached
+        let cacheKey = normalized as NSString
+        if let cached = memory.object(forKey: cacheKey) {
+            return cached as Data
         }
         guard !unavailable.contains(normalized) else { return nil }
 
         let diskURL = cacheURL(for: normalized)
         if let data = try? Data(contentsOf: diskURL),
            NSImage(data: data) != nil {
-            memory[normalized] = data
+            memory.setObject(data as NSData, forKey: cacheKey, cost: data.count)
             return data
         }
 
@@ -61,7 +64,7 @@ actor WebsiteIconCache {
                 unavailable.insert(normalized)
                 return nil
             }
-            memory[normalized] = data
+            memory.setObject(data as NSData, forKey: cacheKey, cost: data.count)
             try? FileManager.default.createDirectory(
                 at: cacheDirectory,
                 withIntermediateDirectories: true

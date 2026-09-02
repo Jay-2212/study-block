@@ -7,12 +7,26 @@ final class ChromeTabEnforcementService: WebEnforcementProvider {
     var errorHandler: ((String) -> Void)?
 
     private let worker = Worker()
+    private var workspaceObserver: NSObjectProtocol?
 
     func start(
         policy: WebEnforcementPolicy,
         sessionStartDate: Date,
         sessionEndDate: Date?
     ) {
+        stop()
+        workspaceObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didActivateApplicationNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            guard let app = notification.userInfo?[
+                NSWorkspace.applicationUserInfoKey
+            ] as? NSRunningApplication,
+            app.bundleIdentifier == "com.google.Chrome" else { return }
+            self?.worker.triggerImmediateInspection()
+        }
+
         worker.start(
             policy: policy,
             sessionStartDate: sessionStartDate,
@@ -27,6 +41,10 @@ final class ChromeTabEnforcementService: WebEnforcementProvider {
     }
 
     func stop() {
+        if let workspaceObserver {
+            NSWorkspace.shared.notificationCenter.removeObserver(workspaceObserver)
+            self.workspaceObserver = nil
+        }
         worker.stopAndRestore()
     }
 }
@@ -116,6 +134,14 @@ private extension ChromeTabEnforcementService {
             onStatus = nil
         }
 
+        func triggerImmediateInspection() {
+            queue.async { [weak self] in
+                guard let self else { return }
+                self.workItem?.cancel()
+                self.schedule(after: 0.1, generation: self.generation)
+            }
+        }
+
         private func schedule(after delay: TimeInterval, generation: UUID) {
             let item = DispatchWorkItem { [weak self] in
                 self?.poll(generation: generation)
@@ -165,7 +191,12 @@ private extension ChromeTabEnforcementService {
             } catch {
                 publishStatus(error.localizedDescription)
             }
-            schedule(after: 2, generation: generation)
+            let nextDelay: TimeInterval = chromeIsFrontmost ? 2 : 8
+            schedule(after: nextDelay, generation: generation)
+        }
+
+        private var chromeIsFrontmost: Bool {
+            NSWorkspace.shared.frontmostApplication?.bundleIdentifier == "com.google.Chrome"
         }
 
         private var chromeIsRunning: Bool {

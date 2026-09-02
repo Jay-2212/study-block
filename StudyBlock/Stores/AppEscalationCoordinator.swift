@@ -40,16 +40,11 @@ final class AppEscalationCoordinator {
         guard !self.blockedApps.isEmpty else { return }
 
         workspaceMonitor.start()
-        let ticker = Timer(timeInterval: 0.5, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.tick() }
-        }
-        RunLoop.main.add(ticker, forMode: .common)
-        self.ticker = ticker
+        updateTickerState()
     }
 
     func stop() {
-        ticker?.invalidate()
-        ticker = nil
+        stopTicker()
         workspaceMonitor.stop()
         blockedApps.removeAll()
         stateMachine.removeAll()
@@ -68,6 +63,7 @@ final class AppEscalationCoordinator {
             now: Date()
         )
         dismissPrompt()
+        updateTickerState()
     }
 
     func beginAllowance() {
@@ -86,6 +82,7 @@ final class AppEscalationCoordinator {
                 maximumMinutes: maximumAllowanceMinutes
             )
             dismissPrompt()
+            updateTickerState()
         } catch {
             validationMessage = error.localizedDescription
         }
@@ -100,12 +97,32 @@ final class AppEscalationCoordinator {
         guard let currentState else { return }
         stateMachine.remove(bundleIdentifier: currentState.app.bundleIdentifier)
         dismissPrompt()
+        updateTickerState()
     }
 
     func closeFailure() {
         guard let currentState else { return }
         stateMachine.remove(bundleIdentifier: currentState.app.bundleIdentifier)
         dismissPrompt()
+        updateTickerState()
+    }
+
+    private func updateTickerState() {
+        if stateMachine.hasActiveTimedStages {
+            guard ticker == nil else { return }
+            let ticker = Timer(timeInterval: 0.5, repeats: true) { [weak self] _ in
+                Task { @MainActor in self?.tick() }
+            }
+            RunLoop.main.add(ticker, forMode: .common)
+            self.ticker = ticker
+        } else {
+            stopTicker()
+        }
+    }
+
+    private func stopTicker() {
+        ticker?.invalidate()
+        ticker = nil
     }
 
     private func handleActivation(_ runningApplication: NSRunningApplication) {
@@ -116,6 +133,7 @@ final class AppEscalationCoordinator {
             return
         }
         handle(event)
+        updateTickerState()
     }
 
     private func tick() {
@@ -133,6 +151,7 @@ final class AppEscalationCoordinator {
                 Int(ceil(until.timeIntervalSince(now)))
             )
         }
+        updateTickerState()
     }
 
     private func handle(_ event: AppEscalationEvent) {

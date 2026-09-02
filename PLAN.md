@@ -102,3 +102,15 @@ of scope; AppleScript enforcement is the shipped core implementation.
 - Configure `studyblock.jaybharti.me`, DNS-only Cloudflare CNAME, and GitHub
   Pages HTTPS.
 - Verify the site, stable download, rendered version, and GitHub link live.
+
+## Phase 5 — Modernization, Notch Session Contour & Performance Pass (v1.2.0)
+
+> Status: **Approved.** Implementation in progress.
+
+- **HUD Perimeter Progress Bar**: Redesigned floating HUD with a perimeter progress border tracing clockwise from top-center.
+- **MacBook Notch Session Contour**: Subtle hardware notch progress contour with smooth fallback on external displays.
+- **Menu Bar Selection Fix**: Prevent dynamic 1-second label rebuilds from breaking menu click tracking.
+- **Memory Optimization**: Thread-safe `NSCache` with count/cost limits replacing unbounded favicon memory dictionary.
+- **Performance Optimization**: Adaptive Chrome tab scanning with active-app detection and on-demand escalation ticker.
+- **Do Not Disturb Fix**: Reliable Focus status verification and accessibility handling.
+
