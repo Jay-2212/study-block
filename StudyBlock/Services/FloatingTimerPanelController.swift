@@ -30,7 +30,7 @@ final class FloatingTimerPanelController {
 
     private func makePanel() -> NSPanel {
         let panel = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 260, height: 88),
+            contentRect: NSRect(x: 0, y: 0, width: 196, height: 72),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false

@@ -18,6 +18,7 @@ struct MenuBarContentView: View {
             Button("Stop Session") {
                 appModel.timer.stop()
             }
+            .keyboardShortcut(".", modifiers: .command)
         } else if appModel.settingsStore.settings.hasCompletedOnboarding {
             Menu("Start Session") {
                 ForEach(SessionPreset.allCases) { preset in

@@ -24,7 +24,7 @@ struct AppNudgeView: View {
         .padding(28)
         .frame(width: 410)
         .fixedSize(horizontal: false, vertical: true)
-        .background(.regularMaterial)
+        .studySurface()
         .accessibilityElement(children: .contain)
         .accessibilityAddTraits(.isModal)
     }
@@ -54,19 +54,18 @@ struct AppNudgeView: View {
     }
 
     private var nudgeActions: some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 10) {
-                Button("Quit Now") {
-                    coordinator.quitCurrentNow()
-                }
-                .buttonStyle(.borderedProminent)
+        VStack(spacing: 14) {
+            Button("Quit Now") {
+                coordinator.quitCurrentNow()
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
 
-                if coordinator.canSnooze {
-                    Button("Give Me 5 Min") {
-                        coordinator.snoozeCurrent()
-                    }
-                    .keyboardShortcut(.cancelAction)
+            if coordinator.canSnooze {
+                Button("Give Me 5 Min") {
+                    coordinator.snoozeCurrent()
                 }
+                .keyboardShortcut(.cancelAction)
             }
 
             HStack(spacing: 8) {
@@ -79,6 +78,7 @@ struct AppNudgeView: View {
                     coordinator.beginAllowance()
                 }
             }
+            .controlSize(.small)
 
             if let message = coordinator.validationMessage {
                 Text(message)

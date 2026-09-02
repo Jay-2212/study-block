@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.1 — 2026-09-02
+
+- Quieted the ready screen so choosing a duration and starting is the only job.
+- Moved Settings into the window toolbar and kept Command-Comma.
+- Made the floating timer a smaller remaining/elapsed clock.
+- Gave the app nudge the same glass surface as the timer, with Quit Now as the
+  primary action.
+
 ## 1.1.0 — 2026-09-01
 
 - Made the floating focus timer draggable and remembered where you left it.

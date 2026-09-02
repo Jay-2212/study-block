@@ -4,25 +4,18 @@ struct TimerSetupView: View {
     @Environment(AppModel.self) private var appModel
 
     var body: some View {
-        VStack(spacing: 28) {
+        VStack(spacing: 24) {
             Spacer()
 
             Image(systemName: appModel.timer.isRunning ? "timer" : "checkmark.shield")
-                .font(.system(size: 52, weight: .medium))
+                .font(.system(size: appModel.timer.isRunning ? 40 : 36, weight: .medium))
                 .foregroundStyle(.tint)
 
             VStack(spacing: 8) {
                 Text(appModel.timer.isRunning ? "Focus session" : "You're ready to focus")
-                    .font(.largeTitle.bold())
+                    .font(.title.weight(.semibold))
                 if appModel.timer.isRunning {
                     BigNumberDisplay(value: appModel.timer.formattedTime, size: .large)
-                } else {
-                    Text("Choose how long you want to focus")
-                        .font(.title2)
-                        .foregroundStyle(.secondary)
-                }
-
-                if appModel.timer.isRunning {
                     Text(appModel.timer.isOpenEnded ? "elapsed" : "remaining")
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -32,7 +25,7 @@ struct TimerSetupView: View {
 
             if appModel.timer.isRunning && !appModel.timer.isOpenEnded {
                 ProgressView(value: appModel.timer.progress)
-                    .frame(width: 360)
+                    .frame(width: 320)
             }
 
             if !appModel.timer.isRunning {
@@ -42,7 +35,7 @@ struct TimerSetupView: View {
                     }
                 }
                 .pickerStyle(.segmented)
-                .frame(width: 500)
+                .frame(width: 440)
                 .accessibilityLabel("Session length")
             }
 
@@ -52,6 +45,7 @@ struct TimerSetupView: View {
                         appModel.timer.stop()
                     }
                     .buttonStyle(.borderedProminent)
+                    .keyboardShortcut(".", modifiers: .command)
 
                     Button(
                         appModel.timer.isPanelVisible ? "Hide Floating Timer" : "Show Floating Timer"
@@ -64,12 +58,7 @@ struct TimerSetupView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)
-                    .keyboardShortcut(.return)
-
-                    SettingsLink {
-                        Label("Settings", systemImage: "gearshape")
-                    }
-                    .controlSize(.large)
+                    .keyboardShortcut(.defaultAction)
                 }
             }
 
@@ -77,20 +66,7 @@ struct TimerSetupView: View {
                 enforcementStatus
                 sessionModeStatus
             } else {
-                VStack(spacing: 8) {
-                    if let message = appModel.lastCompletionMessage {
-                        Label(message, systemImage: "checkmark.circle")
-                            .foregroundStyle(.green)
-                    }
-                    Text("Blocked Chrome tabs and distracting apps are watched only while a session runs.")
-                    if let message = appModel.doNotDisturb.statusMessage {
-                        Label(message, systemImage: "moon")
-                    }
-                }
-                .font(.callout)
-                .foregroundStyle(.secondary)
-
-                notificationPrimingRow
+                idleStatus
             }
 
             Spacer()
@@ -98,6 +74,16 @@ struct TimerSetupView: View {
         .padding(40)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.background)
+        .toolbar {
+            ToolbarItem(placement: .automatic) {
+                SettingsLink {
+                    Label("Settings", systemImage: "gearshape")
+                        .labelStyle(.iconOnly)
+                }
+                .help("Settings")
+            }
+        }
+        .animation(.snappy, value: appModel.timer.isRunning)
     }
 
     private var presetBinding: Binding<SessionPreset> {
@@ -121,6 +107,29 @@ struct TimerSetupView: View {
             Label("Chrome and distracting apps are being watched", systemImage: "shield")
                 .font(.callout)
                 .foregroundStyle(.secondary)
+        }
+    }
+
+    @ViewBuilder
+    private var idleStatus: some View {
+        let completion = appModel.lastCompletionMessage
+        let dndMessage = appModel.doNotDisturb.statusMessage
+        let needsNotificationPrompt =
+            appModel.notifications.authorizationStatus == .notDetermined
+
+        if completion != nil || dndMessage != nil || needsNotificationPrompt {
+            VStack(spacing: 8) {
+                if let completion {
+                    Label(completion, systemImage: "checkmark.circle")
+                        .foregroundStyle(.green)
+                }
+                if let dndMessage {
+                    Label(dndMessage, systemImage: "moon")
+                }
+                notificationPrimingRow
+            }
+            .font(.callout)
+            .foregroundStyle(.secondary)
         }
     }
 

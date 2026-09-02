@@ -7,7 +7,7 @@ reducing distractions while it runs. It has a regular app window, a menu bar
 control, and a small floating timer.
 
 **Status:** active open-source macOS app. The latest published release verified
-for this repository is **v1.1.0** (1 September 2026).
+for this repository is **v1.1.1** (2 September 2026).
 
 ## Features
 
@@ -20,7 +20,7 @@ for this repository is **v1.1.0** (1 September 2026).
 - Optional session-scoped Do Not Disturb and music pausing
 - Website favicons and native app icons with fast local caching and fallbacks
 - Editable study sites, blocked sites and apps, presets, and defaults
-- Settings from the ready screen, app menu, or Command-Comma
+- Settings from the window toolbar, app menu, or Command-Comma
 - Local session history, daily focus time, streaks, and most-blocked sites/apps
 - Launch at login and interrupted-session recovery
 
@@ -38,7 +38,7 @@ before the session.
 Download the current DMG from the permanent
 [latest-release link](https://github.com/Jay-2212/study-block/releases/latest/download/StudyBlock.dmg).
 
-The [v1.1.0 release page](https://github.com/Jay-2212/study-block/releases/tag/v1.1.0)
+The [v1.1.1 release page](https://github.com/Jay-2212/study-block/releases/tag/v1.1.1)
 also includes `StudyBlock.dmg.sha256` for checksum verification.
 
 1. Open `StudyBlock.dmg`.

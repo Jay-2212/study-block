@@ -2,37 +2,35 @@
 
 ## Current state
 
-Study Block 1.1.0 is implemented and published from
+Study Block 1.1.1 is implemented and published from
 [`Jay-2212/study-block`](https://github.com/Jay-2212/study-block).
 The static site is at [`studyblock.jaybharti.me`](https://studyblock.jaybharti.me).
 The site now reads the latest GitHub release for version, download URL, and
-checksum, with v1.1.0 hardcoded as the no-JS fallback.
+checksum, with v1.1.1 hardcoded as the no-JS fallback.
 
 ## Last session
 
-1.1.0 product pass:
+1.1.1 native polish pass, taking only the useful principles from
+`ceorkm/macos-design-skill` (quiet chrome, one job on screen, shared glass,
+shortcuts in menus). Did not install the CSS skill, add a sidebar, or restyle
+the marketing site.
 
-- **Floating timer**: SwiftUI hosting view now drags the panel, and the last
-  position is saved. It no longer snaps back to the top-right on every show.
-- **Accessibility nag**: session start no longer calls
-  `AXIsProcessTrustedWithOptions(prompt: true)`. Do Not Disturb checks
-  silently; Settings → Sessions explains missing access and can open
-  Accessibility settings. Enabling DND can prompt once per launch.
-- **Sites settings**: Add works (editors live on `AppModel`, not throwaway
-  view `let`s). Open Chrome tabs are scanned on the Sites tab. Allowlist still
-  beats the blocklist.
-- **Permanent allow removed**: Google, ChatGPT, and Claude are suggestions
-  only. They block if listed.
-- **Stats**: sessions record blocked sites/apps. Stats shows a 14-day focus
-  chart, most-blocked lists, and per-session chips. Redirects count on first
-  tab redirect, not every 2s poll.
+- **Ready screen**: quieter title, duration picker is the content, Start is the
+  only prominent button, Settings lives in the window toolbar.
+- **Idle copy**: helper text only when a session just finished, notifications
+  need enabling, or Do Not Disturb has a status.
+- **Floating timer**: remaining/elapsed clock, no redundant icon, smaller panel,
+  position still remembered.
+- **Nudge**: shared `studySurface` glass, Quit Now as the primary action.
+- **Consistency**: default surface radius 12, Settings tabs no longer extra
+  padded, menu bar Stop uses ⌘.
 
 ## Verification
 
 - `./script/run_smoke_tests.sh` passed.
 - `./script/build_and_run.sh --verify` launched the Debug app.
 - `./script/package_release.sh` produced `dist/StudyBlock.dmg`.
-- SHA-256: `7acb93371c1804cbacde200f309f3b397efa080965ee8b20fd2cd91f4b704475`
+- SHA-256: `a449b2b1c9288bf8f8a6668c57f5c4438ad7bff41b80a7792a60f1146f122503`
 
 ## Limitations / unresolved
 
@@ -47,8 +45,8 @@ checksum, with v1.1.0 hardcoded as the no-JS fallback.
 ## Next steps
 
 - Trusted distribution (Developer ID, notarization, stapling) still outstanding.
-- Manual check on a real `/Applications` install: drag the timer, add a site,
-  block ChatGPT, confirm no Accessibility dialog with DND off.
+- Manual check on a real `/Applications` install: quieter ready screen, toolbar
+  Settings, drag the timer, confirm remaining/elapsed caption.
 
 ## Open questions
 

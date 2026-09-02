@@ -23,6 +23,5 @@ struct SettingsView: View {
                     Label("General", systemImage: "gearshape")
                 }
         }
-        .padding(20)
     }
 }

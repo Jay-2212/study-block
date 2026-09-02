@@ -4,23 +4,18 @@ struct FloatingTimerView: View {
     @Bindable var timer: TimerCoordinator
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "timer")
-                .font(.title2)
-                .foregroundStyle(.tint)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Focus")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                BigNumberDisplay(value: timer.formattedTime, size: .compact)
-            }
+        VStack(alignment: .leading, spacing: 2) {
+            Text(timer.isOpenEnded ? "elapsed" : "remaining")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .textCase(.uppercase)
+            BigNumberDisplay(value: timer.formattedTime, size: .compact)
         }
-        .padding(.horizontal, 18)
-        .padding(.vertical, 14)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .studySurface(cornerRadius: 16)
-        .padding(5)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .studySurface()
+        .padding(4)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Focus timer")
         .accessibilityValue(
